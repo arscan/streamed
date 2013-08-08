@@ -2,21 +2,48 @@ var moment = require("moment"),
     baseurl = "http://data.githubarchive.org/",
     zlib = require("zlib"),
     http = require("http"),
+    fs = require("fs"),
     JSONStream = require("JSONStream"),
     _ = require("underscore"),
     events = [],
     locations = {},
     lookupqueue = [];
 
+
+if(fs.existsSync(__dirname + "/locations_cache.json")){
+    locations = JSON.parse(fs.readFileSync(__dirname + '/locations_cache.json', 'utf8'));
+}
+
+var bySortedValue = function(obj, callback, context) {
+    //http://stackoverflow.com/questions/5199901/how-to-sort-an-associative-array-by-its-values-in-javascript
+    var tuples = [];
+
+    for (var key in obj){ tuples.push([key, obj[key]]) };
+
+    tuples.sort(function(b, a) { return a[1].count < b[1].count ? 1 : a[1].count > b[1].count ? -1 : 0 });
+
+    var length = tuples.length;
+    while (length--) callback.call(context, tuples[length][0], tuples[length][1]);
+}
+
+bySortedValue(locations , function(key, value) {
+    if(!value.latlng){
+        lookupqueue.push(key);
+    } 
+});
+
 var load = function(){
     var count = 0;
     console.log("---Loading data");
-
     http.get({ host: "data.githubarchive.org",
-               path: "/" + moment().add("m",moment().zone()-(9*60)).format("YYYY-MM-DD-HH") + ".json.gz",
+               path: "/" + moment().add("m",moment().zone()-(9*60)).format("YYYY-MM-DD-H") + ".json.gz",
                port: 80 })
         .on('response', function(response){
             response.pipe(zlib.createGunzip())
+               .on('error', function(err){
+                   console.log('Got some kind of error unzipping, try again in 1 minutes: ' + err);
+                   setTimeout(load,60000);
+               })
                .pipe(JSONStream.parse())
                .on('data',function(e){
                    var index = events.length - 1;
@@ -34,11 +61,15 @@ var load = function(){
                    
                }).on('end', function(){
                    console.log("----Added " + count + " more events");
-               })
+                   setTimeout(load,(61-moment().minutes())*60*1000);
+               });
         });
           
-    setTimeout(load,(61-moment().minutes())*60*1000);
 }
+
+var undefinedcount = 0;
+var reallocationcount = 0;
+var latlongcount = 0;
 
 var eventsloop = function(){
     while(events.length && moment(events[0].created_at).add('h',2) < moment()){
@@ -49,12 +80,18 @@ var eventsloop = function(){
         if(moment(e.created_at).add('h',2).add('s',10) > moment()){
             location = "undefined";
             if(e.actor_attributes){
-                location = e.actor_attributes.location;
+                location = "" + e.actor_attributes.location;
                 latlng = lookup(location);
                 if(latlng){
+                    latlongcount++;
                     location += " " + latlng.lat + " " + latlng.lng;
                 }
 
+            }
+            if(location == "undefined"){
+                undefinedcount++;
+            } else {
+                reallocationcount++;
             }
             console.log("Left: " + events.length + " Loc: " + location);
 
@@ -67,7 +104,7 @@ var lookup = function(place){
         return undefined;
 
     if(!locations[place]){
-        locations[place] = {count: 0};
+        locations[place] = {count: 1};
         lookupqueue.push(place);
     } else {
         locations[place].count++;
@@ -76,23 +113,40 @@ var lookup = function(place){
 }
 
 var locationloop = function(){
-    l = lookupqueue.shift();
-    console.log("~~~~~~ GETTING "  + l);
-    var buffer = "";
-    http.get("http://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(l) + "&sensor=false", function(res){
+    if(lookupqueue.length > 0){
+        l = lookupqueue.shift();
+        console.log("~~~~~~ GETTING "  + l);
         var buffer = "";
-        res.on("data", function(data){buffer=buffer+data});
-        res.on("end",function(){
-            r = JSON.parse(buffer);
-            if(r.results && r.results[0] && r.results[0].geometry && r.results[0].geometry.location){
-                console.log("" + r.results[0].geometry.location.lat + " " +r.results[0].geometry.location.lng); 
-                locations[l].latlng = r.results[0].geometry.location;
-            }
+        http.get("http://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(l) + "&sensor=false", function(res){
+            var buffer = "";
+            res.on("data", function(data){buffer=buffer+data});
+            res.on("end",function(){
+                r = JSON.parse(buffer);
+                if(r.results && r.results[0] && r.results[0].geometry && r.results[0].geometry.location){
+                    console.log("" + r.results[0].geometry.location.lat + " " +r.results[0].geometry.location.lng); 
+                    locations[l].latlng = r.results[0].geometry.location;
+                }
+                });
             });
-        });
+    }
 
+}
+var statsloop = function(){
+    var hitpercent = (100.0 * latlongcount) / (undefinedcount + reallocationcount);
+        definedpercent = (100.0 * reallocationcount) / (undefinedcount + reallocationcount);
+    console.log("  %%%%%% Defined : " + definedpercent.toFixed(2) + "% Lookup Hit: " + hitpercent.toFixed(2) + "% Lookup Queue: " + lookupqueue.length);
+}
+
+var savelocationsloop = function(){
+    fs.writeFile(__dirname + '/locations_cache.json', JSON.stringify(locations), function(){
+        console.log("_____saved locations");
+        
+        
+    });
 }
 
 load();
 setInterval(eventsloop,1000);
 setInterval(locationloop,10000);
+setInterval(savelocationsloop,600000);
+setInterval(statsloop,60020);
