@@ -6,9 +6,13 @@ var moment = require("moment"),
     JSONStream = require("JSONStream"),
     _ = require("underscore"),
     events = [],
+    conf = require('nconf'),   
     locations = {},
     lookupqueue = [];
-
+  
+conf.argv().file({file: __dirname + "/config.json"}).defaults({
+    'geonames_user': 'demo',
+});
 
 if(fs.existsSync(__dirname + "/locations_cache.json")){
     locations = JSON.parse(fs.readFileSync(__dirname + '/locations_cache.json', 'utf8'));
@@ -27,7 +31,7 @@ var bySortedValue = function(obj, callback, context) {
 }
 
 bySortedValue(locations , function(key, value) {
-    if(!value.latlng){
+    if(!value.latlng && !value.fail){
         lookupqueue.push(key);
     } 
 });
@@ -45,8 +49,10 @@ var load = function(){
                    setTimeout(load,60000);
                })
                .pipe(JSONStream.parse())
-               .on('data',function(e){
+               .on('data',function(ev){
                    var index = events.length - 1;
+                   var e = {"created_at": ev.created_at, "location": (ev.actor_attributes ? ev.actor_attributes.location : "undefined"), "repo": (ev.repository ? ev.repository.name : "undefined"), "type": ev.type, "url": ev.url}
+
                    count+=1;
                    events.push(e);
 
@@ -75,25 +81,29 @@ var eventsloop = function(){
     while(events.length && moment(events[0].created_at).add('h',2) < moment()){
         var e = events.shift();
         var location;
+        var latlng = undefined;
         // if I just started up, don't flood the channel
         // ignore the ones that aren't recent
         if(moment(e.created_at).add('h',2).add('s',10) > moment()){
+            //console.log("getting " + e.location);
             location = "undefined";
-            if(e.actor_attributes){
-                location = "" + e.actor_attributes.location;
+            if(e.location){
+                location = "" + e.location;
                 latlng = lookup(location);
                 if(latlng){
                     latlongcount++;
-                    location += " " + latlng.lat + " " + latlng.lng;
                 }
 
-            }
+            } 
+            
+            // just a regular hit
+
             if(location == "undefined"){
                 undefinedcount++;
             } else {
                 reallocationcount++;
             }
-            console.log("Left: " + events.length + " Loc: " + location);
+            console.log("Left: " + events.length + " Type: " + e.type + "\t Loc: " + location + (latlng ? " Latlng: " + latlng.lat + " " + latlng.lng: ""));
 
         }
     }
@@ -111,28 +121,38 @@ var lookup = function(place){
     }
     return locations[place]["latlng"];
 }
+var checklocation = function(loc, cb){
+
+    http.get("http://api.geonames.org/searchJSON?maxRows=1&username=" + conf.get("geonames_user") + "&q=" + encodeURIComponent(loc), function(res){
+        var buffer = "";
+        res.on("data", function(data){buffer=buffer+data});
+        res.on("end",function(){
+            r = JSON.parse(buffer);
+            if(r.geonames && r.geonames[0] && r.geonames[0].lng && r.geonames[0].lat){
+                console.log("" + r.geonames[0].lat + " " +r.geonames[0].lng);
+                cb({"lat":r.geonames[0].lat, "lng": r.geonames[0].lng});
+            } else {
+                cb();
+            }
+            });
+        });
+}
 
 var locationloop = function(){
     if(lookupqueue.length > 0){
         l = lookupqueue.shift();
         console.log("~~~~~~ GETTING "  + l);
-        var buffer = "";
-        http.get("http://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(l) + "&sensor=false", function(res){
-            var buffer = "";
-            res.on("data", function(data){buffer=buffer+data});
-            res.on("end",function(){
-                r = JSON.parse(buffer);
-                if(r.results && r.results[0] && r.results[0].geometry && r.results[0].geometry.location){
-                    console.log("" + r.results[0].geometry.location.lat + " " +r.results[0].geometry.location.lng); 
-                    locations[l].latlng = r.results[0].geometry.location;
-                }
-                });
-            });
+        checklocation(l, function(latlng){
+            if(latlng){
+                locations[l].latlng = latlng;
+            } else {
+                locations[l].fail=1;
+            }
+        });
     }
-
 }
 var statsloop = function(){
-    var hitpercent = (100.0 * latlongcount) / (undefinedcount + reallocationcount);
+    var hitpercent = (100.0 * latlongcount) / (reallocationcount);
         definedpercent = (100.0 * reallocationcount) / (undefinedcount + reallocationcount);
     console.log("  %%%%%% Defined : " + definedpercent.toFixed(2) + "% Lookup Hit: " + hitpercent.toFixed(2) + "% Lookup Queue: " + lookupqueue.length);
 }

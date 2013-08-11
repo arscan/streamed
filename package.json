@@ -6,6 +6,7 @@
     "superagent": "*",
     "moment": "*",
     "underscore": "*",
+    "nconf": "*",
     "JSONStream": "*"
   },
   "main": "./index.js",
