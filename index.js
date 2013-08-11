@@ -5,6 +5,7 @@ var moment = require("moment"),
     fs = require("fs"),
     JSONStream = require("JSONStream"),
     _ = require("underscore"),
+    redis = require("redis").createClient(),
     events = [],
     conf = require('nconf'),   
     locations = {},
@@ -92,6 +93,7 @@ var eventsloop = function(){
                 latlng = lookup(location);
                 if(latlng){
                     latlongcount++;
+                    e.latlng=latlng;
                 }
 
             } 
@@ -104,6 +106,7 @@ var eventsloop = function(){
                 reallocationcount++;
             }
             console.log("Left: " + events.length + " Type: " + e.type + "\t Loc: " + location + (latlng ? " Latlng: " + latlng.lat + " " + latlng.lng: ""));
+            redis.publish("github-stream", JSON.stringify(e));
 
         }
     }

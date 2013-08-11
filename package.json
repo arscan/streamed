@@ -7,6 +7,9 @@
     "moment": "*",
     "underscore": "*",
     "nconf": "*",
+    "redis": "*",
+    "socket.io": "*",
+    "express": "*",
     "JSONStream": "*"
   },
   "main": "./index.js",
