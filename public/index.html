@@ -74,10 +74,11 @@ svg.append("defs").append("path")
 svg.append("use")
     .attr("class", "stroke")
     .attr("xlink:href", "#sphere");
-
+/*
 svg.append("use")
     .attr("class", "fill")
     .attr("xlink:href", "#sphere");
+    */
 
 d3.json("/js/world-50m.json", function(error, world) {
   svg.insert("path", ".graticule")
