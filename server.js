@@ -5,7 +5,7 @@ var moment = require("moment"),
     fs = require("fs"),
     JSONStream = require("JSONStream"),
     _ = require("underscore"),
-    redis = require("redis").createClient(),
+    redis = require("redis"),
     events = [],
     conf = require('nconf'),   
     locations = {},
@@ -13,10 +13,22 @@ var moment = require("moment"),
   
 conf.argv().file({file: __dirname + "/config.json"}).defaults({
     'geonames_user': 'demo',
+    'redis_port': 6379,
+    'redis_host': 'localhost',
+    'redis_auth_string': ''
+
 });
+console.log(conf.get("redis_port") + " " + conf.get("redis_host"));
+
+var redisclient = redis.createClient(conf.get("redis_port"), conf.get("redis_host"));
 
 if(fs.existsSync(__dirname + "/locations_cache.json")){
     locations = JSON.parse(fs.readFileSync(__dirname + '/locations_cache.json', 'utf8'));
+}
+
+if(conf.get('redis_auth_string').length > 0){
+    console.log("found a redis auth string");
+    redisclient.auth(conf.get('redis_auth_string'));
 }
 
 var bySortedValue = function(obj, callback, context) {
@@ -43,6 +55,10 @@ var load = function(){
     http.get({ host: "data.githubarchive.org",
                path: "/" + moment().add("m",moment().zone()-(9*60)).format("YYYY-MM-DD-H") + ".json.gz",
                port: 80 })
+       .on('error', function(err){
+           console.log('Got some kind of error on the hitting data.githubarchive.org' + err);
+           setTimeout(load,60000);
+       })
         .on('response', function(response){
             response.pipe(zlib.createGunzip())
                .on('error', function(err){
@@ -50,6 +66,10 @@ var load = function(){
                    setTimeout(load,60000);
                })
                .pipe(JSONStream.parse())
+               .on('error', function(err){
+                   console.log('Got some kind of error on the json stream, try again in 1 minutes: ' + err);
+                   setTimeout(load,60000);
+               })
                .on('data',function(ev){
                    var index = events.length - 1;
                    var e = {"created_at": ev.created_at, "location": (ev.actor_attributes ? ev.actor_attributes.location : "undefined"), "repo": (ev.repository ? ev.repository.name : "undefined"), "type": ev.type, "url": ev.url}
@@ -106,7 +126,7 @@ var eventsloop = function(){
                 reallocationcount++;
             }
             console.log("Left: " + events.length + " Type: " + e.type + "\t Loc: " + location + (latlng ? " Latlng: " + latlng.lat + " " + latlng.lng: ""));
-            redis.publish("github-stream", JSON.stringify(e));
+            redisclient.publish("github-stream", JSON.stringify(e));
 
         }
     }
@@ -128,6 +148,9 @@ var checklocation = function(loc, cb){
 
     http.get("http://api.geonames.org/searchJSON?maxRows=1&username=" + conf.get("geonames_user") + "&q=" + encodeURIComponent(loc), function(res){
         var buffer = "";
+        res.on("error", function(){
+            console.log("error looking up geonames");
+        });
         res.on("data", function(data){buffer=buffer+data});
         res.on("end",function(){
             r = JSON.parse(buffer);

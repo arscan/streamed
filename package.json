@@ -12,7 +12,7 @@
     "express": "*",
     "JSONStream": "*"
   },
-  "main": "./index.js",
+  "main": "./server.js",
   "engines": { "node": ">0.6.0" },
   "keywords": [ "github", "github-stream"],
   "licenses": [ { "type": "MIT", "url": "http://github.com/arscan/github-stream/raw/master/LICENSE" } ],
