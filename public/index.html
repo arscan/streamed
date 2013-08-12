@@ -40,6 +40,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 var socket = io.connect();
@@ -96,6 +97,7 @@ d3.select(self.frameElement).style("height", height + "px");
 
 socket.on('message', function (data) {
     setTimeout(function(){
+        $("#updates").prepend(data.created_at + " | " + data.repo + " | " + data.location + "<br>\n");
         console.log(data);
         if(data.latlng){
             coordinates = projection([data.latlng.lng,data.latlng.lat]);
@@ -123,3 +125,10 @@ socket.on('message', function (data) {
 });
 
 </script>
+<h3>Github updates (2 hour delay)</h3>
+    <div id="updates">
+
+
+    </div>
+</body>
+</html>
