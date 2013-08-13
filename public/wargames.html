@@ -19,6 +19,16 @@
     stroke-width: 2;
     fill:none;  
 }
+.russia {
+    stroke: #DD0048;
+    stroke-width: 2;
+    fill:none;  
+}
+.usa {
+    stroke: #67C8FF;
+    stroke-width: 2;
+    fill:none;  
+}
 .point {
   fill: #67C8FF;
   stroke: #67C8FF;
@@ -27,7 +37,7 @@
 }
 #updates {
     height: 320px;
-    width: 960px;
+    width: 940px;
     overflow: hidden;
     border:2px solid #FFF;
     line-height: 150%;
@@ -37,6 +47,7 @@
     padding:10px;
     font-family: silkscreennormal;
     margin-top:50px;
+    font-size:16px;
 }
 svg {
     border:2px solid #FFF;
@@ -76,16 +87,22 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 
-d3.json("/js/110m_coast.json", function(error, world) {
+d3.json("/js/wargames_world.json", function(error, world) {
   svg.insert("path", ".graticule")
       .datum(topojson.feature(world, world.objects.ne_110m_coastline))
       .attr("class", "land")
       .attr("d", path);
 
   svg.insert("path", ".graticule")
-      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
-      .attr("class", "boundary")
+      .datum(topojson.feature(world, world.objects.russia))
+      .attr("class", "russia")
       .attr("d", path);
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.feature(world, world.objects.usa))
+      .attr("class", "usa")
+      .attr("d", path);
+
 });
 
 d3.select(self.frameElement).style("height", height + "px");
