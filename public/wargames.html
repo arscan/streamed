@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+@font-face {
+    font-family: 'silkscreennormal';
+    src: url('/css/slkscr.eot');
+    src: url('/css/slkscr.eot?#iefix') format('embedded-opentype'),
+         url('/css/slkscr.woff') format('woff'),
+         url('/css/slkscr.ttf') format('truetype'),
+         url('/css/slkscr.svg#silkscreennormal') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+.land {
+    stroke: #83F52C;//#67C8FF;
+    stroke-width: 2;
+    fill:none;  
+}
+.point {
+  fill: #67C8FF;
+  stroke: #67C8FF;
+  stroke-opacity: .5;
+  stroke-width: .5px;
+}
+#updates {
+    height: 320px;
+    width: 960px;
+    overflow: hidden;
+    border:2px solid #FFF;
+    line-height: 150%;
+    border-radius: 5px;
+    box-shadow: 0 0 20px #FFF;
+    color: #67C8FF;
+    padding:10px;
+    font-family: silkscreennormal;
+    margin-top:50px;
+}
+svg {
+    border:2px solid #FFF;
+    border-radius: 5px;
+    box-shadow: 0 0 20px #FFF;
+    //transform: skew(0deg,1deg);
+    //-ms-transform: skew(0deg,1deg); /* IE 9 */
+    //-webkit-transform: skew(0deg,1deg); /* Safari and Chrome */
+}
+
+
+</style>
+<body bgcolor="#000">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io.connect();
+
+var width = 960,
+    height = 500;
+
+var projection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(150)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+d3.json("/js/110m_coast.json", function(error, world) {
+  svg.insert("path", ".graticule")
+      .datum(topojson.feature(world, world.objects.ne_110m_coastline))
+      .attr("class", "land")
+      .attr("d", path);
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+      .attr("class", "boundary")
+      .attr("d", path);
+});
+
+d3.select(self.frameElement).style("height", height + "px");
+
+socket.on('message', function (data) {
+    setTimeout(function(){
+        $("#updates").prepend(data.created_at + " | " + data.repo + " | " + data.location + "<br>\n");
+        console.log(data);
+        if(data.latlng){
+            coordinates = projection([data.latlng.lng,data.latlng.lat]);
+            svg.append('svg:circle')
+            .attr('cx', coordinates[0])
+            .attr('cy', coordinates[1])
+            .attr('r', 0)
+            .style('opacity',0)
+            .attr('class','point')
+            .transition()
+            .duration(500)
+            .attr('r',50)
+            .style('opacity',1.0)
+            .transition()
+            .ease('linear')
+            .duration(1000 + Math.random()*500)
+            .attr('r',5)
+            .style('opacity',1);
+            // .transition()
+            // .duration(1800000)
+            // .style('opacity',0)
+            // .ease('linear');
+        }
+    }, Math.random()*500);
+});
+
+</script>
+    <div id="updates">
+
+
+    </div>
+</body>
+</html>

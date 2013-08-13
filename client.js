@@ -1,4 +1,5 @@
-var app = require('express')()
+var express = require('express')
+  , app = express()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server)
   , fs = require('fs')
@@ -28,14 +29,15 @@ console.log("listening on port " + port);
 
 server.listen(port);
 
+app.use(express.static(__dirname + '/public'));
+
 app.get('/', function (req, res) {
   res.sendfile(__dirname + '/public/index.html');
 });
-
-app.get("/js/world-50m.json", function (req, res) {
-    res.sendfile(__dirname + "/public/js/world-50m.json");
-
+app.get('/wargames', function (req, res) {
+  res.sendfile(__dirname + '/public/wargames.html');
 });
+
 
 io.sockets.on('connection', function (socket) {
   console.log("New client");
