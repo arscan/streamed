@@ -2,6 +2,9 @@
 <meta charset="utf-8">
 <style>
 
+/* ---------*/
+/*  font     */
+
 @font-face {
     font-family: 'silkscreennormal';
     src: url('/css/slkscr.eot');
@@ -14,9 +17,12 @@
 
 }
 
+/* ---------*/
+/*  maps     */
+
 .land {
     stroke: #83F52C;//#67C8FF;
-    stroke-width: 2;
+    stroke-width: 1;
     fill:none;  
 }
 .russia {
@@ -35,73 +41,247 @@
   stroke-opacity: .5;
   stroke-width: .5px;
 }
-#updates {
-    height: 320px;
-    width: 940px;
+/* ------------*/
+/*  common     */
+
+.glowbox {
+    border:2px solid #FFF;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #FFF;
+}
+
+.column {
+    float: left;
+}
+
+h1 {
+    margin: 0px;
+    padding: 0px;
+    color: #FFF;
+    font-family: silkscreennormal;
+    size: 16px;
+    font-weight: normal;
+    margin-top: -30px;
+    text-align: center;
+
+}
+
+/* ------------*/
+/*  elements   */
+
+#center {
+    margin-top:12px;
+}
+
+#centerbottom {
+    height: 172px;
+    width: 480px;
     overflow: hidden;
     border:2px solid #FFF;
     line-height: 150%;
     border-radius: 5px;
     box-shadow: 0 0 20px #FFF;
     color: #67C8FF;
-    padding:10px;
+    padding:8px;
     font-family: silkscreennormal;
-    margin-top:50px;
-    font-size:16px;
+    margin-top:26px;
+    font-size:14px;
 }
-svg {
-    border:2px solid #FFF;
-    border-radius: 5px;
-    box-shadow: 0 0 20px #FFF;
-    //transform: skew(0deg,1deg);
-    //-ms-transform: skew(0deg,1deg); /* IE 9 */
-    //-webkit-transform: skew(0deg,1deg); /* Safari and Chrome */
+
+#left {
+    width:500px;
+    padding-right:20px;
+    transform: 20px;
+    -ms-perspective: 20px;
+    -webkit-perspective: 800;
+    -moz-perspective: 20px;
+}
+#leftmap {
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+}
+
+#leftbottom{
+    margin-top:30px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+}
+
+#leftbottom1{
+    float:left;
+    width:230px;
+    height:200px;
+
+}
+#leftbottom2{
+    margin-left:30px;
+    float:left;
+    width:230px;
+    height:200px;
+
+}
+
+#right {
+    width:500px;
+    padding-right:20px;
+    transform: 20px;
+    -ms-perspective: 20px;
+    -webkit-perspective: 800;
+    -moz-perspective: 20px;
+}
+#rightmap {
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(350deg);
+}
+
+#rightbottom{
+    margin-top:30px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(350deg);
+}
+
+#rightbottom1{
+    float:left;
+    width:230px;
+    height:200px;
+
+}
+#rightbottom2{
+    margin-left:30px;
+    float:left;
+    width:230px;
+    height:200px;
+
+}
+
+body {
+    padding:30px;
 }
 
 
 </style>
-<body bgcolor="#000">
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<body bgcolor="#000">
+    <div id="left" class="column">
+        <div id="leftmap" class="glowbox">
+        </div>
+        <div id="leftbottom">
+            <div id="leftbottom1" class="glowbox">
+                HI THERE!
+            </div>
+            <div id="leftbottom2" class="glowbox">
+                HI THERE!
+            </div>
+        </div>
+    </div>
+    <div id="center" class="column">
+        <div id="centermap" class="glowbox">
+
+        </div>
+        <div id="centerbottom" class="glowbox">
+
+
+        </div>
+    </div>
+    <div id="right" class="column">
+        <div id="rightmap" class="glowbox">
+        </div>
+        <div id="rightbottom">
+            <div id="rightbottom1" class="glowbox">
+            </div>
+            <div id="rightbottom2" class="glowbox">
+            </div>
+        </div>
+    </div>
+</body>
 <script>
+
 var socket = io.connect();
 
-var width = 960,
-    height = 500;
+var width = 500,
+    height = 300;
 
-var projection = d3.geo.mercator() //d3.geo.mercator()
-    .scale(150)
+var centerprojection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(80)
     .translate([width / 2, height / 2])
     .precision(.1);
 
-var path = d3.geo.path()
-    .projection(projection);
+var centerpath = d3.geo.path()
+    .projection(centerprojection);
 
-var graticule = d3.geo.graticule();
+var leftprojection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(400)
+    .translate([1.85*width, 1.45 * height])
+    .precision(.1);
 
-var svg = d3.select("body").append("svg")
+var leftpath = d3.geo.path()
+    .projection(leftprojection);
+
+var rightprojection = d3.geo.mercator()
+    .scale(400)
+    .translate([.3*width, 1.8*height ])
+    .precision(.1);
+
+var rightpath = d3.geo.path()
+    .projection(rightprojection);
+
+
+var svg = d3.select("#centermap").append("svg")
+    .attr("width", width)
+    .attr("height", height-12);
+
+var svgleft = d3.select("#leftmap").append("svg")
     .attr("width", width)
     .attr("height", height);
 
+var svgright = d3.select("#rightmap").append("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-d3.json("/js/wargames_world.json", function(error, world) {
-  svg.insert("path", ".graticule")
+d3.json("/js/world_small.json", function(error, world) {
+  svg.insert("path")
       .datum(topojson.feature(world, world.objects.ne_110m_coastline))
       .attr("class", "land")
-      .attr("d", path);
+      .attr("d", centerpath);
 
-  svg.insert("path", ".graticule")
+  svg.insert("path")
       .datum(topojson.feature(world, world.objects.russia))
       .attr("class", "russia")
-      .attr("d", path);
+      .attr("d", centerpath);
 
-  svg.insert("path", ".graticule")
+  svg.insert("path")
       .datum(topojson.feature(world, world.objects.usa))
       .attr("class", "usa")
-      .attr("d", path);
+      .attr("d", centerpath);
+
+});
+
+d3.json("/js/europe_small.json", function(error, world) {
+  svgright.insert("path")
+      .datum(topojson.feature(world, world.objects.europe))
+      .attr("class", "land")
+      .attr("d", rightpath);
+
+  svgright.insert("path")
+      .datum(topojson.feature(world, world.objects.russia))
+      .attr("class", "russia")
+      .attr("d", rightpath);
+
+  svgright.insert("path")
+      .datum(topojson.feature(world, world.objects.usa))
+      .attr("class", "usa")
+      .attr("d", rightpath);
+
+});
+d3.json("/js/wargames_usa.json", function(error, world) {
+  svgleft.insert("path")
+      .datum(topojson.feature(world, world.objects.usa))
+      .attr("class", "usa")
+      .attr("d", leftpath);
 
 });
 
@@ -109,37 +289,67 @@ d3.select(self.frameElement).style("height", height + "px");
 
 socket.on('message', function (data) {
     setTimeout(function(){
-        $("#updates").prepend(data.created_at + " | " + data.repo + " | " + data.location + "<br>\n");
-        console.log(data);
+        $("#centerbottom").prepend(data.repo + " | " + data.location + "<br>\n");
+        
+        //console.log(data);
         if(data.latlng){
-            coordinates = projection([data.latlng.lng,data.latlng.lat]);
+            centercoordinates = centerprojection([data.latlng.lng,data.latlng.lat]);
             svg.append('svg:circle')
-            .attr('cx', coordinates[0])
-            .attr('cy', coordinates[1])
+            .attr('cx', centercoordinates[0])
+            .attr('cy', centercoordinates[1])
             .attr('r', 0)
             .style('opacity',0)
             .attr('class','point')
             .transition()
-            .duration(500)
+            .duration(200)
             .attr('r',50)
             .style('opacity',1.0)
             .transition()
             .ease('linear')
-            .duration(1000 + Math.random()*500)
-            .attr('r',5)
+            .duration(500 + Math.random()*500)
+            .attr('r',2)
             .style('opacity',1);
-            // .transition()
-            // .duration(1800000)
-            // .style('opacity',0)
-            // .ease('linear');
+
+            if(data.latlng.lat < 50 && data.latlng.lat >24 && data.latlng.lng > -125 && data.latlng.lng < -66){ 
+                leftcoordinates = leftprojection([data.latlng.lng,data.latlng.lat]);
+                svgleft.append('svg:circle')
+                .attr('cx', leftcoordinates[0])
+                .attr('cy', leftcoordinates[1])
+                .attr('r', 0)
+                .style('opacity',0)
+                .attr('class','point')
+                .transition()
+                .duration(200)
+                .attr('r',100)
+                .style('opacity',1.0)
+                .transition()
+                .ease('linear')
+                .duration(500 + Math.random()*500)
+                .attr('r',4)
+                .style('opacity',1);
+            }
+            
+            if(data.latlng.lat < 60 && data.latlng.lat > 35 && data.latlng.lng > -9 && data.latlng.lng < 40){ 
+                rightcoordinates = rightprojection([data.latlng.lng,data.latlng.lat]);
+                svgright.append('svg:circle')
+                .attr('cx', rightcoordinates[0])
+                .attr('cy', rightcoordinates[1])
+                .attr('r', 0)
+                .style('opacity',0)
+                .attr('class','point')
+                .transition()
+                .duration(200)
+                .attr('r',100)
+                .style('opacity',1.0)
+                .transition()
+                .ease('linear')
+                .duration(500 + Math.random()*500)
+                .attr('r',4)
+                .style('opacity',1);
+            }
         }
     }, Math.random()*500);
 });
 
 </script>
-    <div id="updates">
-
-
-    </div>
-</body>
 </html>
