@@ -72,7 +72,7 @@ var load = function(){
                })
                .on('data',function(ev){
                    var index = events.length - 1;
-                   var e = {"created_at": ev.created_at, "location": (ev.actor_attributes ? ev.actor_attributes.location : "undefined"), "repo": (ev.repository ? ev.repository.name : "undefined"), "type": ev.type, "url": ev.url}
+                   var e = {"created_at": ev.created_at, "location": (ev.actor_attributes ? ev.actor_attributes.location : "undefined"), "repo": (ev.repository ? ev.repository.name : "undefined"), "type": ev.type, "url": ev.url, "actor": ev.actor}
 
                    count+=1;
                    events.push(e);
