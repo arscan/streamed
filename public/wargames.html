@@ -44,6 +44,12 @@
 /* ------------*/
 /*  common     */
 
+body {
+
+    font-family: silkscreennormal;
+    color: #FFF;
+
+}
 .glowbox {
     border:2px solid #FFF;
     border-radius: 5px;
@@ -58,7 +64,6 @@ h1 {
     margin: 0px;
     padding: 0px;
     color: #FFF;
-    font-family: silkscreennormal;
     size: 16px;
     font-weight: normal;
     margin-top: -30px;
@@ -66,11 +71,51 @@ h1 {
 
 }
 
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+td {
+    color: #83F52C;
+    margin: 0px;
+    padding: 0px;
+    font-size: 8px;
+    line-height:130%;
+}
+table {
+    width: 100%;
+}
+
+td.hit {
+    color: #67C8FF;
+}
+td.loc{
+    text-align:right;
+}
+td.repo{
+}
+td.actor{
+}
+
 /* ------------*/
 /*  elements   */
 
+#container{
+    margin: auto;
+    width: 1580px;
+}
+
 #center {
     margin-top:12px;
+}
+
+#paused {
+    position: absolute;
+    left: 850px;
+    top: 170px;
+    font-size:40px;
+    display:none;
 }
 
 #centerbottom {
@@ -78,14 +123,11 @@ h1 {
     width: 480px;
     overflow: hidden;
     border:2px solid #FFF;
-    line-height: 150%;
     border-radius: 5px;
     box-shadow: 0 0 20px #FFF;
     color: #67C8FF;
     padding:8px;
-    font-family: silkscreennormal;
     margin-top:26px;
-    font-size:14px;
 }
 
 #left {
@@ -166,36 +208,40 @@ body {
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <body bgcolor="#000">
-    <div id="left" class="column">
-        <div id="leftmap" class="glowbox">
-        </div>
-        <div id="leftbottom">
-            <div id="leftbottom1" class="glowbox">
-                HI THERE!
+    <div id="container">
+        <div id="left" class="column">
+            <div id="leftmap" class="glowbox">
             </div>
-            <div id="leftbottom2" class="glowbox">
-                HI THERE!
+            <div id="leftbottom">
+                <div id="leftbottom1" class="glowbox">
+                </div>
+                <div id="leftbottom2" class="glowbox">
+                </div>
+            </div>
+        </div>
+        <div id="center" class="column">
+            <div id="centermap" class="glowbox">
+
+            </div>
+            <div id="centerbottom" class="glowbox">
+                <table id="updates">
+                </table>
+            </div>
+        </div>
+        <div id="right" class="column">
+            <div id="rightmap" class="glowbox">
+            </div>
+            <div id="rightbottom">
+                <div id="rightbottom1" class="glowbox">
+                </div>
+                <div id="rightbottom2" class="glowbox">
+                </div>
             </div>
         </div>
     </div>
-    <div id="center" class="column">
-        <div id="centermap" class="glowbox">
+    <div id="paused">
+        Paused
 
-        </div>
-        <div id="centerbottom" class="glowbox">
-
-
-        </div>
-    </div>
-    <div id="right" class="column">
-        <div id="rightmap" class="glowbox">
-        </div>
-        <div id="rightbottom">
-            <div id="rightbottom1" class="glowbox">
-            </div>
-            <div id="rightbottom2" class="glowbox">
-            </div>
-        </div>
     </div>
 </body>
 <script>
@@ -204,6 +250,18 @@ var socket = io.connect();
 
 var width = 500,
     height = 300;
+
+var paused = false;
+$('#centerbottom').mouseenter(function() {
+    paused = true;
+    $('#paused').css('display','inherit');
+});
+$('#centerbottom').mouseleave(function() {
+    $('#paused').css('display','none');
+    paused = false;
+});
+
+
 
 var centerprojection = d3.geo.mercator() //d3.geo.mercator()
     .scale(80)
@@ -289,10 +347,13 @@ d3.select(self.frameElement).style("height", height + "px");
 
 socket.on('message', function (data) {
     setTimeout(function(){
-        $("#centerbottom").prepend(data.repo + " | " + data.location + "<br>\n");
+        if(paused) return;
+
+        if(!data.latlng){
+            $("#centerbottom table").prepend("<tr><td><a href='" + data.url + "'>" + data.repo + "</a></td><td class='actor'><a href='http://github.com/" + data.actor + "'>" + data.actor + "</a></td><td>&nbsp;</td></tr>\n");
+        } else {
+        $("#centerbottom table").prepend("<tr><td class='hit repo'>" + data.repo + "</td><td class='actor hit'><a href='http://github.com/" + data.actor + "'>" + data.actor + "</a></td><td class='loc hit'>" + data.location + "</td></tr>\n");
         
-        //console.log(data);
-        if(data.latlng){
             centercoordinates = centerprojection([data.latlng.lng,data.latlng.lat]);
             svg.append('svg:circle')
             .attr('cx', centercoordinates[0])
