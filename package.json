@@ -10,7 +10,8 @@
     "redis": "*",
     "socket.io": "*",
     "express": "*",
-    "JSONStream": "*"
+    "JSONStream": "*",
+    "irc": "*"
   },
   "main": "./server.js",
   "engines": { "node": ">0.6.0" },
