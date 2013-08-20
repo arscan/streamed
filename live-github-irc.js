@@ -84,36 +84,42 @@ var run = function(){
         });
         res.on('end', function(){
 
-            var newevents = JSON.parse(data);
+            try {
+
+                var newevents = JSON.parse(data);
 
 
-            last = _.reject(_.pluck(newevents,"url"), function(url){
-                return _.contains(last,url);
-            });
+                last = _.reject(_.pluck(newevents,"url"), function(url){
+                    return _.contains(last,url);
+                });
 
-            var count = 0;
+                var count = 0;
 
-            _.each(newevents, function(val){
-                // if(val.type.substring(0,1)== "F"){
-                //    console.log(val);
-                //    process.exit(0);
-                // }
+                _.each(newevents, function(val){
+                    // if(val.type.substring(0,1)== "F"){
+                    //    console.log(val);
+                    //    process.exit(0);
+                    // }
 
-                // console.log(val);
-                  
-                if(_.contains(last,val.url)){
-                    count++;
-                    setTimeout(function(){
-                        ircclient.say(channel,  createMessage(val));
-                        console.log(val.url);
-                    }, Math.random()*6000);
+                    // console.log(val);
+                      
+                    if(_.contains(last,val.url)){
+                        count++;
+                        setTimeout(function(){
+                            ircclient.say(channel,  createMessage(val));
+                            console.log(val.url);
+                        }, Math.random()*6000);
+                    }
+                }); 
+
+                console.log(count);
+
+                if(count > 20){
+                    setTimeout(run,2000);
                 }
-            }); 
+            } catch (ex) {
 
-            console.log(count);
-
-            if(count > 20){
-                setTimeout(run,2000);
+                console.log("Error processing event: " + ex);
             }
 
 
