@@ -3,24 +3,45 @@ var http = require('https'),
     _ = require('underscore'),
     irc = require('irc');
 
-var server = "localhost",
-    nick = "github2-bot",
+var server = "irc.robscanlon.com",
+    nick = "ghub-bot",
     channel = "#github";
+
+var separator_color = "gray",
+    separator = "*";
+
+var colors = [
+    "orange",
+    "light_magenta",
+    "dark_blue",
+    "gray",
+    "yellow",
+    "light_red",
+    "light_magenta",
+    "light_cyan"
+    ];
 
 var last = [];
 
-
 var ircclient = new irc.Client(server, nick, {debug: false, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#github"]});
 
+/* listeners */
 
-// ircclient.addListener('error', function(message) {
-//         console.log('irc error: ' +  message);
-// });
+ircclient.addListener('error', function(message) {
+         console.log('irc error: ' +  message);
+ });
+
+ircclient.on("error", function(err){
+    console.log("irc error: " + err);
+
+});
 
 ircclient.addListener('message', function (from, to, message) {
         console.log(from + ' => ' + to + ': ' + message);
 });
 
+
+/* helper format functions */
 
 var w = function(c,t){
     return irc.colors.wrap(c,t);
@@ -34,45 +55,68 @@ var shortentype = function(t){
 
     }
 
-
 }
+var formatArray = function(arr){
+    var i = 0;
+    var ret = "";
+    for(var j = 0; j< arr.length; j++){
+        if(i > colors.length)
+            i = 0;
+
+        if(j>0)
+            ret += w(separator_color, " " + separator + " ");
+
+        ret += w(colors[i],arr[j]);
+        i++;
+    }
+
+    return ret;
+}
+
+/* create a message */
 
 var createMessage = function(ev){
     var ret = "";
+    var values = [];
 
     if(ev.repository){
-        ret += w("gray","[[") + w('orange',ev.repository.owner + "/" + ev.repository.name) + w("gray","]] ");
+        values.push('' + ev.repository.owner + '/' + ev.repository.name);
     } else if(ev.payload && ev.payload.target){
-        ret += w("gray","//") + w('orange',ev.payload.target.login) + w("gray","// ");
+        values.push(ev.payload.target.login);
+    } else {
+        values.push('-');
     }
 
-    ret += w("light_red", shortentype(ev.type));
-    ret += w("light_magenta", " * ");
+    values.push(shortentype(ev.type));
+    values.push(ev.url);
 
-    ret += w("dark_blue",ev.url);
 
     if(ev.actor_attributes && ev.actor_attributes.login){
-        ret += w("light_magenta", " * ") + w("dark_green", ev.actor_attributes.login);
+        values.push(ev.actor_attributes.login);
+
+    } else {
+        values.push("-");
 
     }
     
     if(ev.actor_attributes && ev.actor_attributes.location){
-        ret += w("light_magenta", " * ") + w("yellow", ev.actor_attributes.location);
-
+        values.push(ev.actor_attributes.location);
+    } else {
+        values.push("-");
     }
     if(ev.repository && ev.repository.language){
-        ret += w("light_magenta", " * ") + w("light_cyan", ev.repository.language);
+        values.push(ev.repository.language);
 
+    } else {
+        values.push("-");
     }
+
+    return formatArray(values);
     
-
-
-    return ret;
-    
-
-
-
 }
+
+
+/* main run loop */
 
 var run = function(){
 
@@ -96,12 +140,7 @@ var run = function(){
                 var count = 0;
 
                 _.each(newevents, function(val){
-                    // if(val.type.substring(0,1)== "F"){
-                    //    console.log(val);
-                    //    process.exit(0);
-                    // }
 
-                    // console.log(val);
                       
                     if(_.contains(last,val.url)){
                         count++;
@@ -129,7 +168,6 @@ var run = function(){
     });
 
 }
-
 
 setInterval(run,6000);
 
