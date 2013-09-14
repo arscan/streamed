@@ -24,12 +24,23 @@ ircclient.addListener('error', function(message) {
          console.log('irc error: ' +  util.inspect(message));
  });
 
+
 var joinChannel = function(channelname){
     ircclient.join(channelname);
     console.log("joining " + channelname);
     ircclient.say(mainchannel, "Joining " + channelname);
+    // TODO: CLEAN THIS UP
     app.get('/' + channelname.substring(1,channelname.length), function (req, res) {
-      res.sendfile(__dirname + '/public/index2.html');
+        res.sendfile(__dirname + '/public/index2.html');
+        io.sockets.on('connection', function (socket) {
+            console.log("New client");
+        });
+    });
+    app.get('/' + channelname.substring(1,channelname.length) + '/:viz', function (req, res) {
+        res.sendfile(__dirname + '/public/index2.html');
+        io.sockets.on('connection', function (socket) {
+            console.log("New client");
+        });
     });
 }
 
@@ -56,7 +67,9 @@ ircclient.addListener('message', function(to,from,message){
             partChannel(message.substring(14,message.length));
         }
     } else {
-        io.sockets.emit('message', message);
+        // io.sockets.emit('message', message);
+        console.log("sending to just people in " + from.substring(1,from.length));
+        io.of('/' + from.substring(1,from.length)).emit('message',message);
     }
 });
 
@@ -70,9 +83,6 @@ app.get('/wargames', function (req, res) {
 });
 
 
-io.sockets.on('connection', function (socket) {
-  console.log("New client");
-});
 
 setInterval(function(){ircclient.list()}, 30000);
 
