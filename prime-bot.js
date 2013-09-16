@@ -48,6 +48,14 @@ ircclient.on("part",function(channel, nick){
     console.log("parted, getting names in a channel to see if I'm alone");
 });
 
+ircclient.on("join",function(channel, nick){
+    console.log("somebody named " + nick + " is joining, making op");
+    if(nick == mynick) return;
+    ircclient.send('MODE', channel, '+o', nick);
+    for(var i = 0; i< channels.length; i++){
+        ircclient.say(mainchannel, "New channel: " + channels[i]);
+    }
+});
 var listchannels = function(){
     ircclient.list();
 }
