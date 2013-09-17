@@ -136,11 +136,3 @@ var stripColors = function(text){
 webserver.listen(port);
 
 app.use(express.static(__dirname + '/public'));
-
-app.get('/wargames', function (req, res) {
-  res.sendfile(__dirname + '/public/wargames.html');
-});
-
-
-
-
