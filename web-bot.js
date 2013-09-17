@@ -77,6 +77,14 @@ function getLocation(loc, cb){
 
 };
 
+ircclient.on("join",function(channel, nick){
+    if(nick == mynick){ 
+        return;
+    } else if (nick == "prime") {
+        ircclient.send('MODE', channel, '+o', nick);
+    }
+});
+
 
 ircclient.addListener('message', function(to,from,message){
     if(from == "#controlcenter" && to == masterbot){
