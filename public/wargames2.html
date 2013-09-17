@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+/* ---------*/
+/*  font     */
+
+@font-face {
+    font-family: 'silkscreennormal';
+    src: url('/css/slkscr.eot');
+    src: url('/css/slkscr.eot?#iefix') format('embedded-opentype'),
+         url('/css/slkscr.woff') format('woff'),
+         url('/css/slkscr.ttf') format('truetype'),
+         url('/css/slkscr.svg#silkscreennormal') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'Lets go Digital';
+    src: url('/css/lets_go_digital_regular-webfont.eot');
+    src: url('/css/lets_go_digital_regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/css/lets_go_digital_regular-webfont.woff') format('woff'),
+         url('/css/lets_go_digital_regular-webfont.ttf') format('truetype'),
+         url('/css/lets_go_digital_regular-webfont.svg#silkscreennormal') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+/* ---------*/
+/*  maps     */
+
+.land {
+    stroke: #83F52C;
+    stroke-width: 1;
+    fill:none;  
+}
+.russia {
+    stroke: #DD0048;
+    stroke-width: 2;
+    fill:none;  
+}
+.usa {
+    stroke: #67C8FF;
+    stroke-width: 2;
+    fill:none;  
+}
+.point {
+  fill: #67C8FF;
+  stroke: #67C8FF;
+  stroke-opacity: .5;
+  stroke-width: .5px;
+}
+/* ------------*/
+/*  common     */
+
+body {
+
+    font-family: silkscreennormal;
+    color: #67C8FF;
+    line-height: 120%;
+
+}
+.glowbox {
+    border:2px solid #FFF;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #999,
+                inset 0 0 10em #222;
+    box-shadow: 0 0 15px #005b8e,
+                inset 0 0 10em #002033;
+}
+
+.column {
+    float: left;
+}
+
+h1 {
+    margin: 0px;
+    padding: 0px;
+    color: #FFF;
+    size: 16px;
+    font-weight: normal;
+    margin-top: -30px;
+    text-align: center;
+
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+td {
+    color: #83F52C;
+    margin: 0px;
+    padding: 0px;
+    font-size: 8px;
+    line-height:130%;
+}
+table {
+    width: 100%;
+}
+
+td.hit {
+    color: #67C8FF;
+}
+td.loc{
+    text-align:right;
+}
+td.repo{
+}
+td.actor{
+}
+.glass {
+
+}
+
+.glass:after{
+
+}
+
+/* ------------*/
+/*  elements   */
+
+#container{
+    margin: auto;
+    width: 1580px;
+}
+
+#center {
+    margin-top:12px;
+    padding-right:10px;
+}
+
+#centermapoverlay {
+    font-size: 10px;
+    line-height: 12px;
+    color: #DD0048;
+    position: absolute;
+    padding-left:20px;
+    top: 240px;
+    height:84px;
+    overflow:hidden;
+}
+#paused {
+    position: absolute;
+    left: 850px;
+    top: 170px;
+    font-size:40px;
+    display:none;
+}
+
+#centerbottom {
+    height: 172px;
+    width: 480px;
+    overflow: hidden;
+    color: #83F52C;
+    padding:8px;
+    margin-top:26px;
+}
+#centermiddle {
+    padding-top: 10px;
+    padding-bottom: 23px;
+    width: 500px;
+
+}
+#centermiddle div{
+    float:left;
+    width:165px;
+    line-height:18px;
+    text-align:center;
+}
+
+#left {
+    width:500px;
+    padding-right:10px;
+    transform: 20px;
+    -ms-perspective: 20px;
+    -webkit-perspective: 800;
+    -moz-perspective: 20px;
+}
+#leftmap {
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+}
+#leftmapoverlay {
+    font-size: 10px;
+    line-height: 12px;
+    color: #DD0048;
+    position: absolute;
+    bottom: 20px;
+    left:20px;
+    height:84px;
+    overflow:hidden;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+}
+.smallwhite{
+    color: #FFF;
+    font-size:10px;
+}
+.bigred{
+    font-size:26px;
+    font-family: "Lets go Digital";
+    color: #DD0048;
+}
+#leftmiddle {
+    padding-top: 10px;
+    padding-bottom: 30px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+    text-align:center;
+
+}
+#leftmiddle div{
+    float:left;
+    width:165px;
+    margin: auto;
+    line-height:18px;
+}
+
+
+#leftbottom{
+    margin-top:23px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(10deg);
+}
+
+#leftbottom1{
+    float:left;
+    width:230px;
+    height:200px;
+
+}
+#leftbottom1overlay {
+    font-size: 10px;
+    line-height: 12px;
+    color: #DD0048;
+    position: absolute;
+    top: 145px;
+    left:20px;
+    height:48px;
+    overflow:hidden;
+}
+#leftbottom2{
+    margin-left:30px;
+    float:left;
+    width:210px;
+    height:180px;
+    padding:10px;
+    overflow:hidden;
+
+}
+
+#right {
+    width:500px;
+    padding-right:20px;
+    transform: 20px;
+    -ms-perspective: 20px;
+    -webkit-perspective: 800;
+    -moz-perspective: 20px;
+}
+#rightmap {
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(350deg);
+}
+#rightmapoverlay {
+    font-size: 10px;
+    line-height: 12px;
+    color: #DD0048;
+    position: absolute;
+    bottom: 20px;
+    right:20px;
+    text-align:right;
+    height:84px;
+    overflow:hidden;
+}
+#rightmiddle {
+    padding-top: 10px;
+    padding-bottom: 24px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(350deg);
+    text-align:center;
+
+}
+#rightmiddle div{
+    float:left;
+    width:165px;
+    margin: auto;
+    line-height:18px;
+}
+
+
+#rightbottom{
+    margin-top:30px;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform: rotateY(350deg);
+}
+
+#rightbottom1{
+    float:left;
+    width:210px;
+    height:180px;
+    padding:10px;
+    overflow:hidden;
+
+}
+#rightbottom2{
+    margin-left:30px;
+    float:left;
+    width:210px;
+    height:180px;
+    padding:10px;
+    overflow:hidden;
+
+}
+
+body {
+    padding:30px;
+}
+
+
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<body bgcolor="#000">
+    <div id="container">
+        <div id="left" class="column">
+            <div id="leftmap" class="glowbox">
+                <div id="leftmapoverlay"></div>
+            </div>
+            <div id="leftmiddle">
+               <div class="smallwhite">USA</div>
+               <div class="smallwhite">EUROPE</div>
+               <div class="smallwhite">AUS/NZ</div>
+               <div class="bigred" id="usatotal">00000</div>
+               <div class="bigred" id="europetotal">00000</div>
+               <div class="bigred" id="australiatotal">00000</div>
+            </div>
+            <div id="leftbottom">
+                <div id="leftbottom1" class="glowbox">
+                <div id="leftbottom1overlay"></div>
+                </div>
+                <div id="leftbottom2" class="glowbox">
+                </div>
+            </div>
+        </div>
+        <div id="center" class="column">
+            <div id="centermap" class="glowbox">
+                <div id="centermapoverlay"></div>
+            </div>
+            <div id="centermiddle">
+               <div class="smallwhite">total</div>
+               <div class="smallwhite">events / min</div>
+               <div class="smallwhite">elapsed</div>
+               <div class="bigred" id="eventtotal">00000</div>
+               <div class="bigred" id="eventpermin">00000</div>
+               <div class="bigred" id="elapsedtime">00000</div>
+            </div>
+            <div id="centerbottom" class="glowbox">
+                This is a work in progress.  Create a channel in irc.robscanlon.com if you'd like to stream your own data here.  <br/><br/>More visualizations and data streams coming soon!
+            </div>
+        </div>
+        <div id="right" class="column">
+            <div id="rightmap" class="glowbox">
+                <div id="rightmapoverlay"></div>
+            </div>
+            <div id="rightmiddle">
+               <div class="smallwhite">ident %</div>
+               <div class="smallwhite">random</div>
+               <div class="smallwhite">random</div>
+               <div class="bigred" id="identpercent">00000</div>
+               <div class="bigred" id="fancy1">00000</div>
+               <div class="bigred" id="fancy2">00000</div>
+            </div>
+            <div id="rightbottom">
+                <div id="rightbottom1" class="glowbox">
+                </div>
+                <div id="rightbottom2" class="glowbox">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="paused">
+        Paused
+
+    </div>
+</body>
+<script>
+
+var socket = io.connect(document.URL.split('/').slice(0,4).join('/'));
+
+var width = 500,
+    height = 300;
+
+var eventcount = 0,
+    australiacount = 0,
+    europecount=0,
+    usacount=0,
+    identyes=0;
+
+var starttime = new Date();
+
+var paused = false;
+$('#leftbottom2').mouseenter(function() {
+    paused = true;
+    $('#paused').css('display','inherit');
+});
+$('#leftbottom2').mouseleave(function() {
+    $('#paused').css('display','none');
+    paused = false;
+});
+$('#rightbottom1').mouseenter(function() {
+    paused = true;
+    $('#paused').css('display','inherit');
+});
+$('#rightbottom1').mouseleave(function() {
+    $('#paused').css('display','none');
+    paused = false;
+});
+
+$('#rightbottom2').mouseenter(function() {
+    paused = true;
+    $('#paused').css('display','inherit');
+});
+$('#rightbottom2').mouseleave(function() {
+    $('#paused').css('display','none');
+    paused = false;
+});
+
+
+var centerprojection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(80)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var centerpath = d3.geo.path()
+    .projection(centerprojection);
+
+var leftprojection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(400)
+    .translate([1.85*width, 1.45 * height])
+    .precision(.1);
+
+var leftbotprojection = d3.geo.mercator() //d3.geo.mercator()
+    .scale(197)
+    .translate([-385,0])
+    .precision(.1);
+
+var leftpath = d3.geo.path()
+    .projection(leftprojection);
+
+var leftbotpath = d3.geo.path()
+    .projection(leftbotprojection);
+
+
+var rightprojection = d3.geo.mercator()
+    .scale(400)
+    .translate([.3*width, 1.8*height ])
+    .precision(.1);
+
+var rightpath = d3.geo.path()
+    .projection(rightprojection);
+
+
+var svg = d3.select("#centermap").append("svg")
+    .attr("width", width)
+    .attr("height", height-12);
+
+var svgleft = d3.select("#leftmap").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var svgleftbottom = d3.select("#leftbottom1").append("svg")
+    .attr("width", 230)
+    .attr("height", 200);
+
+var svgright = d3.select("#rightmap").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("/js/world_small.json", function(error, world) {
+  svg.insert("path")
+      .datum(topojson.feature(world, world.objects.ne_110m_coastline))
+      .attr("class", "land")
+      .attr("d", centerpath);
+
+  svg.insert("path")
+      .datum(topojson.feature(world, world.objects.russia))
+      .attr("class", "russia")
+      .attr("d", centerpath);
+
+  svg.insert("path")
+      .datum(topojson.feature(world, world.objects.usa))
+      .attr("class", "usa")
+      .attr("d", centerpath);
+
+});
+
+d3.json("/js/europe_small.json", function(error, world) {
+  svgright.insert("path")
+      .datum(topojson.feature(world, world.objects.europe))
+      .attr("class", "land")
+      .attr("d", rightpath);
+
+
+});
+d3.json("/js/wargames_usa.json", function(error, world) {
+  svgleft.insert("path")
+      .datum(topojson.feature(world, world.objects.usa))
+      .attr("class", "usa")
+      .attr("d", leftpath);
+
+});
+
+d3.json("/js/australia_small.json", function(error, world) {
+  svgleftbottom.insert("path")
+      .datum(topojson.feature(world, world.objects.australia))
+      .attr("class", "land")
+      .attr("d", leftbotpath);
+
+});
+
+var pad = function(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+var updateStats = function(){
+    var elapsed = parseInt((new Date() - starttime)/1000);
+    $("#elapsedtime").text(pad(elapsed,5));
+    $("#eventpermin").text(pad(parseInt(60*eventcount/elapsed),5));
+    $("#eventtotal").text(pad(eventcount,5));
+    $("#identpercent").text(pad(parseInt(100*identyes/eventcount),5));
+    $("#usatotal").text(pad(usacount,5));
+    $("#europetotal").text(pad(europecount,5));
+    $("#australiatotal").text(pad(australiacount,5));
+    if(Math.random()<.1){
+        $("#fancy1").text(pad(parseInt(Math.random()*10000),5));
+    }
+    if(Math.random()<.1){
+        $("#fancy2").text(pad(parseInt(Math.random()*10000),5));
+    }
+}
+
+var updateStatsLoop = function(){
+   setTimeout(updateStatsLoop,1000);
+   updateStats();
+}
+updateStatsLoop();
+
+
+
+
+d3.select(self.frameElement).style("height", height + "px");
+
+socket.on('message', function (datain) {
+    eventcount++;
+    console.log(datain);
+
+    var data = {};
+    data.actor = datain[3];
+    data.repo = datain[0];
+    data.type = datain[5];
+    data.location = datain[4];
+    if(datain.length > 6){
+        data.latlng = {};
+        data.latlng.lat = datain[6].replace("lat: ", "");
+        data.latlng.lng = datain[7].replace("lng: ", "");
+
+
+    }
+
+    setTimeout(function(){
+        if(paused) return;
+            $("#leftbottom2").prepend("<a href='" + data.url + "'>" + data.actor + "</a><br/>");
+            $("#rightbottom1").prepend("<a href='" + data.url + "'>" + data.repo + "</a><br/>");
+            $("#rightbottom2").prepend("<a href='" + data.url + "'>" + data.type + "</a><br/>");
+
+        if(!data.latlng){
+            // $("#centerbottom table").prepend("<tr><td><a href='" + data.url + "'>" + data.repo + "</a></td><td class='actor'><a href='http://github.com/" + data.actor + "'>" + data.actor + "</a></td><td>&nbsp;</td></tr>\n");
+        } else {
+            identyes++;
+            // $("#centerbottom table").prepend("<tr><td class='hit repo'>" + data.repo + "</td><td class='actor hit'><a href='http://github.com/" + data.actor + "'>" + data.actor + "</a></td><td class='loc hit'>" + data.location + "</td></tr>\n");
+        
+            centercoordinates = centerprojection([data.latlng.lng,data.latlng.lat]);
+            svg.append('svg:circle')
+            .attr('cx', centercoordinates[0])
+            .attr('cy', centercoordinates[1])
+            .attr('r', 0)
+            .style('opacity',0)
+            .attr('class','point')
+            .transition()
+            .duration(200)
+            .attr('r',50)
+            .style('opacity',1.0)
+            .transition()
+            .ease('linear')
+            .duration(500 + Math.random()*500)
+            .attr('r',2)
+            .style('opacity',1);
+
+            $("#centermapoverlay").prepend(data.location + "<br/>");
+
+            /* USA */
+
+            if(data.latlng.lat < 50 && data.latlng.lat >24 && data.latlng.lng > -125 && data.latlng.lng < -66){ 
+                usacount++;
+                leftcoordinates = leftprojection([data.latlng.lng,data.latlng.lat]);
+                svgleft.append('svg:circle')
+                .attr('cx', leftcoordinates[0])
+                .attr('cy', leftcoordinates[1])
+                .attr('r', 0)
+                .style('opacity',0)
+                .attr('class','point')
+                .transition()
+                .duration(200)
+                .attr('r',100)
+                .style('opacity',1.0)
+                .transition()
+                .ease('linear')
+                .duration(500 + Math.random()*500)
+                .attr('r',4)
+                .style('opacity',1);
+
+                $("#leftmapoverlay").prepend(data.location + "<br/>");
+            }
+
+            /* europe */
+            
+            if(data.latlng.lat < 60 && data.latlng.lat > 35 && data.latlng.lng > -9 && data.latlng.lng < 40){ 
+                europecount++;
+                rightcoordinates = rightprojection([data.latlng.lng,data.latlng.lat]);
+                svgright.append('svg:circle')
+                .attr('cx', rightcoordinates[0])
+                .attr('cy', rightcoordinates[1])
+                .attr('r', 0)
+                .style('opacity',0)
+                .attr('class','point')
+                .transition()
+                .duration(200)
+                .attr('r',100)
+                .style('opacity',1.0)
+                .transition()
+                .ease('linear')
+                .duration(500 + Math.random()*500)
+                .attr('r',4)
+                .style('opacity',1);
+                $("#rightmapoverlay").prepend(data.location + "<br/>");
+            }
+
+            /* AUS / NZ */
+
+            if(data.latlng.lat < -10 && data.latlng.lat > -50 && data.latlng.lng > 115 && data.latlng.lng < 180){ 
+                australiacount++;
+                leftbottomcoordinates = leftbotprojection([data.latlng.lng,data.latlng.lat]);
+                svgleftbottom.append('svg:circle')
+                .attr('cx', leftbottomcoordinates[0])
+                .attr('cy', leftbottomcoordinates[1])
+                .attr('r', 0)
+                .style('opacity',0)
+                .attr('class','point')
+                .transition()
+                .duration(200)
+                .attr('r',100)
+                .style('opacity',1.0)
+                .transition()
+                .ease('linear')
+                .duration(500 + Math.random()*500)
+                .attr('r',4)
+                .style('opacity',1);
+                $("#leftbottom1overlay").prepend(data.location + "<br/>");
+            }
+        }
+    }, Math.random()*500);
+});
+
+</script>
+</html>
