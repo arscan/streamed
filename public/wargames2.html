@@ -568,6 +568,7 @@ socket.on('message', function (datain) {
     data.repo = datain[0];
     data.type = datain[5];
     data.location = datain[4];
+    data.url = datain[2];
     if(datain.length > 6){
         data.latlng = {};
         data.latlng.lat = datain[6].replace("lat: ", "");
