@@ -7,6 +7,8 @@ var server = "irc.robscanlon.com",
     mynick = "prime",
     mainchannel = "#controlcenter";
 
+var baseurl = "http://streams.robscanlon.com";
+
 var channels = [];
 
 var ircclient = new irc.Client(server, mynick, {debug: false, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#controlcenter"]});
@@ -50,7 +52,12 @@ ircclient.on("part",function(channel, nick){
 
 ircclient.on("join",function(channel, nick){
     console.log("somebody named " + nick + " is joining, making op");
-    if(nick == mynick) return;
+    if(nick == mynick){
+        ircclient.say(channel, "Hi! Anything you say will now be streamed to " + baseurl + "/" + channel.substring(1) + "/");
+        ircclient.say(channel, "In the future, I'll be able to help you configure your visualization.  I am still a work in progress ;-)");
+
+        return;
+    }
     ircclient.send('MODE', channel, '+o', nick);
     for(var i = 0; i< channels.length; i++){
         ircclient.say(mainchannel, "New channel: " + channels[i]);
