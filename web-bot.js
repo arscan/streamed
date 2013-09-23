@@ -136,3 +136,4 @@ var stripColors = function(text){
 webserver.listen(port);
 
 app.use(express.static(__dirname + '/public'));
+

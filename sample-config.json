@@ -2,5 +2,7 @@
     "geonames_user": "demo",
     "redis_host": "127.0.0.1",
     "redis_port": 6379,
-    "redis_auth_string": "authstringhere"
+    "redis_auth_string": "authstringhere",
+    "operlogin": "opernick",
+    "operpass": "operpass"
 }

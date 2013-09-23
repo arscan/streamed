@@ -1,7 +1,13 @@
 var http = require('https'),
     _ = require('underscore'),
     irc = require('irc'),
-    util = require('util');
+    util = require('util'),
+    conf = require('nconf');
+  
+conf.argv().file({file: __dirname + "/config.json"}).defaults({
+    'operlogin': 'login',
+    'operpass': 'pass'
+});
 
 var server = "irc.robscanlon.com",
     mynick = "prime",
@@ -11,13 +17,26 @@ var baseurl = "http://streams.robscanlon.com";
 
 var channels = [];
 
-var ircclient = new irc.Client(server, mynick, {debug: false, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#controlcenter"]});
+var ircclient = new irc.Client(server, mynick, {debug: true, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#controlcenter"]});
 
 /* listeners */
 
-ircclient.addListener('error', function(message) {
+ircclient.on('error', function(message) {
          console.log('irc error: ' +  util.inspect(message));
  });
+
+
+ircclient.on("connect", function(){
+    console.log("--------------- connected");
+    ircclient.say("operserv", "ologin " + conf.get("operlogin") + " " + conf.get("operpass"));
+
+
+
+});
+
+setTimeout(function(){
+    // ircclient.say("operserv", "ologin " + conf.get("operlogin") + " " + conf.get("operpass"));
+},19000);
 
 
 ircclient.on("channellist_item", function(channel_info){
@@ -53,6 +72,7 @@ ircclient.on("part",function(channel, nick){
 ircclient.on("join",function(channel, nick){
     console.log("somebody named " + nick + " is joining, making op");
     if(nick == mynick){
+        ircclient.say("operserv", "omode " + channel + " +o " + mynick);
         ircclient.say(channel, "Hi! Anything you say will now be streamed to " + baseurl + "/" + channel.substring(1) + "/");
         ircclient.say(channel, "In the future, I'll be able to help you configure your visualization.  I am still a work in progress ;-)");
 
