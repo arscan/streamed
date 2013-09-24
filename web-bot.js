@@ -43,7 +43,7 @@ var joinChannel = function(channelname){
         });
     });
     app.get('/' + channelname.substring(1,channelname.length) + '/:viz', function (req, res) {
-        res.sendfile(__dirname + '/public/wargames.html');
+        res.sendfile(__dirname + '/public/wargames2.html');
         io.sockets.on('connection', function (socket) {
             console.log("New client");
         });

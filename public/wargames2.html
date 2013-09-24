@@ -27,6 +27,14 @@
     font-style: normal;
 
 }
+@font-face {
+    font-family: 'monkey';
+    src: url('/css/monkey.eot');
+    src: url('/css/monkey.woff') format('woff'), url('/css/monkey.ttf') format('truetype'), url('/css/monkey.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 
 /* ---------*/
 /*  maps     */
@@ -57,7 +65,8 @@
 
 body {
 
-    font-family: silkscreennormal;
+    font-family: monkey;
+    text-transform:uppercase;
     color: #67C8FF;
     line-height: 120%;
 
@@ -134,6 +143,7 @@ td.actor{
 }
 
 #centermapoverlay {
+    font-family: silkscreennormal;
     font-size: 10px;
     line-height: 12px;
     color: #DD0048;
@@ -185,6 +195,7 @@ td.actor{
     -webkit-transform: rotateY(10deg);
 }
 #leftmapoverlay {
+    font-family: silkscreennormal;
     font-size: 10px;
     line-height: 12px;
     color: #DD0048;
@@ -234,6 +245,7 @@ td.actor{
 
 }
 #leftbottom1overlay {
+    font-family: silkscreennormal;
     font-size: 10px;
     line-height: 12px;
     color: #DD0048;
@@ -266,6 +278,7 @@ td.actor{
     -webkit-transform: rotateY(350deg);
 }
 #rightmapoverlay {
+    font-family: silkscreennormal;
     font-size: 10px;
     line-height: 12px;
     color: #DD0048;
@@ -326,6 +339,8 @@ body {
 <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
+<script src="js/streamwriter.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <body bgcolor="#000">
     <div id="container">
@@ -362,7 +377,6 @@ body {
                <div class="bigred" id="elapsedtime">00000</div>
             </div>
             <div id="centerbottom" class="glowbox">
-                Live updates of Github<br/><br/>This is a work in progress.  Create a channel in irc.robscanlon.com if you'd like to stream your own data here.  <br/><br/>More visualizations and data streams coming soon!
             </div>
         </div>
         <div id="right" class="column">
@@ -391,6 +405,18 @@ body {
     </div>
 </body>
 <script>
+
+$("#centermapoverlay").streamwriter();
+$("#leftmapoverlay").streamwriter();
+$("#leftbottom1overlay").streamwriter();
+$("#rightmapoverlay").streamwriter();
+$("#rightbottom1").streamwriter({maxlines:10});
+$("#rightbottom2").streamwriter({maxlines:10});
+$("#leftbottom2").streamwriter({maxlines:10});
+$("#centerbottom").streamwriter({timeout:50, charblock:1})
+    .streamwriter("write","Live Updates to Github.com")
+    .streamwriter("write","")
+    .streamwriter("write","Connect to IRC.ROBSCANLON.COM if you would like to try it out yourself.")
 
 var socket = io.connect(document.URL.split('/').slice(0,4).join('/'));
 
@@ -579,9 +605,16 @@ socket.on('message', function (datain) {
 
     setTimeout(function(){
         if(paused) return;
+            /*
             $("#leftbottom2").prepend("<a href='" + data.url + "'>" + data.actor + "</a><br/>");
             $("#rightbottom1").prepend("<a href='" + data.url + "'>" + data.repo + "</a><br/>");
             $("#rightbottom2").prepend("<a href='" + data.url + "'>" + data.type + "</a><br/>");
+            */
+
+
+            $("#leftbottom2").streamwriter("write", data.actor);
+            $("#rightbottom1").streamwriter("write", data.repo);
+            $("#rightbottom2").streamwriter("write", data.type);
 
         if(!data.latlng){
             // $("#centerbottom table").prepend("<tr><td><a href='" + data.url + "'>" + data.repo + "</a></td><td class='actor'><a href='http://github.com/" + data.actor + "'>" + data.actor + "</a></td><td>&nbsp;</td></tr>\n");
@@ -606,7 +639,8 @@ socket.on('message', function (datain) {
             .attr('r',2)
             .style('opacity',1);
 
-            $("#centermapoverlay").prepend(data.location + "<br/>");
+            // $("#centermapoverlay").prepend(data.location + "<br/>");
+            $("#centermapoverlay").streamwriter("write",data.location);
 
             /* USA */
 
@@ -629,7 +663,8 @@ socket.on('message', function (datain) {
                 .attr('r',4)
                 .style('opacity',1);
 
-                $("#leftmapoverlay").prepend(data.location + "<br/>");
+                //$("#leftmapoverlay").prepend(data.location + "<br/>");
+                $("#leftmapoverlay").streamwriter("write",data.location);
             }
 
             /* europe */
@@ -652,7 +687,8 @@ socket.on('message', function (datain) {
                 .duration(500 + Math.random()*500)
                 .attr('r',4)
                 .style('opacity',1);
-                $("#rightmapoverlay").prepend(data.location + "<br/>");
+                //$("#rightmapoverlay").prepend(data.location + "<br/>");
+                $("#rightmapoverlay").streamwriter("write",data.location);
             }
 
             /* AUS / NZ */
@@ -675,7 +711,8 @@ socket.on('message', function (datain) {
                 .duration(500 + Math.random()*500)
                 .attr('r',4)
                 .style('opacity',1);
-                $("#leftbottom1overlay").prepend(data.location + "<br/>");
+                //$("#leftbottom1overlay").prepend(data.location + "<br/>");
+                $("#leftbottom1overlay").streamwriter("write",data.location);
             }
         }
     }, Math.random()*500);
