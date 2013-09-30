@@ -37,13 +37,15 @@ var joinChannel = function(channelname){
     ircclient.say(mainchannel, "Joining " + channelname);
     // TODO: CLEAN THIS UP
     app.get('/' + channelname.substring(1,channelname.length), function (req, res) {
-        res.sendfile(__dirname + '/public/wargames2.html');
+        // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
+        res.sendfile(__dirname + '/public/viz/wargames/index.html');
         io.sockets.on('connection', function (socket) {
             console.log("New client");
         });
     });
     app.get('/' + channelname.substring(1,channelname.length) + '/:viz', function (req, res) {
-        res.sendfile(__dirname + '/public/wargames2.html');
+        // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
+        res.sendfile(__dirname + '/public/viz/wargames/index.html');
         io.sockets.on('connection', function (socket) {
             console.log("New client");
         });

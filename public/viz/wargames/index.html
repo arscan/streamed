@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <link href="/viz/wargames/css/styles.css" media="all" rel="stylesheet" type="text/css" />
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
+    <script src="/viz/wargames/js/streamwriter.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body bgcolor="#000">
+    <div id="container">
+        <div id="left" class="column">
+            <div id="leftmap" class="glowbox">
+                <div id="leftmapoverlay"></div>
+            </div>
+            <div id="leftmiddle">
+               <div class="smallwhite">USA</div>
+               <div class="smallwhite">EUROPE</div>
+               <div class="smallwhite">AUS/NZ</div>
+               <div class="bigred" id="usatotal">00000</div>
+               <div class="bigred" id="europetotal">00000</div>
+               <div class="bigred" id="australiatotal">00000</div>
+            </div>
+            <div id="leftbottom">
+                <div id="leftbottom1" class="glowbox">
+                <div id="leftbottom1overlay"></div>
+                </div>
+                <div id="leftbottom2" class="glowbox">
+                    <div class="texttitle">
+                        Listing Users
+                    </div>
+                    <div id="leftbottom2text">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="center" class="column">
+            <div id="centermap" class="glowbox">
+                <div id="centermapoverlay"></div>
+            </div>
+            <div id="centermiddle">
+               <div class="smallwhite">total</div>
+               <div class="smallwhite">events / min</div>
+               <div class="smallwhite">elapsed</div>
+               <div class="bigred" id="eventtotal">00000</div>
+               <div class="bigred" id="eventpermin">00000</div>
+               <div class="bigred" id="elapsedtime">00000</div>
+            </div>
+            <div id="centerbottom" class="glowbox">
+                Welcome to a live <a href="http://github.com">Github</a> vizualization in the style of the 80's cold war movie <a href="http://en.wikipedia.org/wiki/WarGames">WarGames</a>.  
+                This is made with nodejs, socket.io, d3, and IRC (as the messaging infrastructure... yeah, really).  Data is from <a href="http://github.com/timeline.json">github.com</a> and <a href="http://geonames.com">geonames.com</a>.
+                <br><br>
+                This is part of a larger general purpose streaming data platform I'm putting together.  See 
+                the <a href="http://github.com/arscan/github-stream">Github repo</a> for information. 
+                
+            </div>
+        </div>
+        <div id="right" class="column">
+            <div id="rightmap" class="glowbox">
+                <div id="rightmapoverlay"></div>
+            </div>
+            <div id="rightmiddle">
+               <div class="smallwhite">ident %</div>
+               <div class="smallwhite">random</div>
+               <div class="smallwhite">random</div>
+               <div class="bigred" id="identpercent">00000</div>
+               <div class="bigred" id="fancy1">00000</div>
+               <div class="bigred" id="fancy2">00000</div>
+            </div>
+            <div id="rightbottom">
+                <div id="rightbottom1" class="glowbox">
+                    <div class="texttitle">
+                        Listing Repos
+                    </div>
+                    <div id="rightbottom1text">
+                    </div>
+                </div>
+                <div id="rightbottom2" class="glowbox">
+                    <div class="texttitle">
+                        Listing Languages
+                    </div>
+                    <div id="rightbottom2text">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="paused">
+        Paused
+    </div>
+</body>
+<script src="/viz/wargames/js/scripts.js"></script>
+</html>

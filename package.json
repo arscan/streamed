@@ -7,7 +7,6 @@
     "moment": "*",
     "underscore": "*",
     "nconf": "*",
-    "redis": "*",
     "socket.io": "*",
     "express": "*",
     "JSONStream": "*",
