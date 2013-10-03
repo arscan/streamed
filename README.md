@@ -1,7 +1,7 @@
 Streamed: A Streaming Data Visualization Platform 
 ---
 
-**Streamed** is a streaming data visualization platform (name is subject to change).  It is intended to be a central place for people to share meaningful data streams and creative visualizations.  There are plenty of sites out there that aggregate large, static data sets.  But I'm more interested in data that is constantly changing, and visualizations that expose patterns or help draw meaning from that data.  
+**Streamed** is a streaming data visualization platform (name is subject to change).  It is intended to be a central place for people to share meaningful data streams and creative visualizations.  There are plenty of sites out there that aggregate large, static data sets.  But I'm more interested in data that is constantly changing, and visualizations that expose patterns or help draw meaning from that data (or at least is cool looking).
 
 It is currently hosted at http://streams.robscanlon.com, but I will move it to a more appropriate domain (when I think of one).
 
