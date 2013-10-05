@@ -308,3 +308,6 @@ socket.on('message', function (datain) {
         }
     }, Math.random()*500);
 });
+
+// force a reload every hour
+setTimeout(function(){location.reload(true)},3600000);
