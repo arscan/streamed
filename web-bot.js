@@ -6,7 +6,7 @@ var express = require('express')
   , app = express()
   , http = require('http')
   , webserver = http.createServer(app)
-  , io = require('socket.io').listen(webserver)
+  , io = require('socket.io').listen(webserver, {'log level': 1})
   , port = 8000;
 
 var server = "irc.robscanlon.com",
@@ -59,8 +59,7 @@ var partChannel = function(channelname){
 }
 
 
-function getLocation(loc, cb){
-    console.log("Looking up " + loc);
+var getLocation = function(loc, cb){
     http.get(locationserver + encodeURIComponent(loc), function(res) {
         var data = "";
         res.on('data', function(d){
@@ -68,7 +67,6 @@ function getLocation(loc, cb){
 
         });
         res.on('end', function(){
-            console.log("Found " + loc + " at " + data);
             
             cb(data);
 
@@ -98,7 +96,6 @@ ircclient.addListener('message', function(to,from,message){
         }
     } else {
         // io.sockets.emit('message', message);
-        console.log("sending to just people in " + from.substring(1,from.length));
         var arr = stripColors(message).split(" * ");
         if(from == "#github" && arr.length > 4 && arr[4] !== "-"){
 
@@ -111,7 +108,6 @@ ircclient.addListener('message', function(to,from,message){
                 res.on("data", function(data){buffer=buffer+data});
                 res.on("end",function(){
                     r = JSON.parse(buffer);
-                    console.log(r);
                     if(r.lat && r.lng){
                         arr.push("lat: " + r.lat);
                         arr.push("lng: " + r.lng);
@@ -125,6 +121,16 @@ ircclient.addListener('message', function(to,from,message){
 
     }
 });
+
+var pollConnected = function(){
+    setTimeout(pollConnected, 10000);
+    console.log("Num active connections: " + Object.keys(io.connected).length);
+}
+pollConnected();
+io.sockets.on('disconnect', function() {
+    console.log('Got disconnect!');
+});
+
 var stripColors = function(text){
 
     var ret = text.replace(/\u0003\d{1,2}/g,'');
