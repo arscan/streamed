@@ -40,14 +40,21 @@ var joinChannel = function(channelname){
         // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
         res.sendfile(__dirname + '/public/viz/wargames/index.html');
         io.sockets.on('connection', function (socket) {
-            console.log("New client");
+            socket.on('disconnect', function () {
+                console.log("Dropped connection from " + socket.handshake.address.address);
+            });
+
+            console.log("New connection from " + socket.handshake.address.address);
         });
     });
     app.get('/' + channelname.substring(1,channelname.length) + '/:viz', function (req, res) {
         // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
         res.sendfile(__dirname + '/public/viz/wargames/index.html');
         io.sockets.on('connection', function (socket) {
-            console.log("New client");
+            socket.on('disconnect', function () {
+                console.log("Dropped connection from " + socket.handshake.address.address);
+            });
+            console.log("New connection from " + socket.handshake.address.address);
         });
     });
 }
