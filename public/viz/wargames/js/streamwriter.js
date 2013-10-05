@@ -29,8 +29,6 @@
         if(this.options.enabled){
             this._queue[this.element[0].id].push(text);
         } else {
-            console.log("doing it");
-
             this._currentlinecount[this.element[0].id]++;
             this.element.append(document.createElement("br"));
             if(this._currentlinecount[this.element[0].id] > this.options.maxlines){

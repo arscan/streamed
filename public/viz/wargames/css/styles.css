@@ -198,6 +198,8 @@ td.actor{
 #leftmap {
     -webkit-transform-style: preserve-3d;
     -webkit-transform: rotateY(10deg);
+    -moz-transform-style: preserve-3d;
+    -moz-transform: rotateY(.2deg);
 }
 #leftmapoverlay {
     font-family: silkscreennormal;
@@ -241,6 +243,8 @@ td.actor{
     margin-top:23px;
     -webkit-transform-style: preserve-3d;
     -webkit-transform: rotateY(10deg);
+    -moz-transform-style: preserve-3d;
+    -moz-transform: rotateY(.2deg);
 }
 
 #leftbottom1{
@@ -281,6 +285,8 @@ td.actor{
 #rightmap {
     -webkit-transform-style: preserve-3d;
     -webkit-transform: rotateY(350deg);
+    -moz-transform-style: preserve-3d;
+    -moz-transform: rotateY(-.2deg);
 }
 #rightmapoverlay {
     font-family: silkscreennormal;
@@ -314,6 +320,8 @@ td.actor{
     margin-top:30px;
     -webkit-transform-style: preserve-3d;
     -webkit-transform: rotateY(350deg);
+    -moz-transform-style: preserve-3d;
+    -moz-transform: rotateY(-.2deg);
 }
 
 #rightbottom1{

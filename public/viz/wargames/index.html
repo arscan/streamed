@@ -56,9 +56,9 @@
                 Welcome to a live <a href="http://github.com">Github</a> visualization in the style of the 80's cold war movie <a href="http://en.wikipedia.org/wiki/WarGames">WarGames</a>.  
                 This is made with nodejs, socket.io, d3, and IRC (as the messaging infrastructure... yeah, really).  Data is from <a href="http://github.com/timeline.json">github.com</a> and <a href="http://geonames.org">geonames.org</a>.
                 <br><br>
+
                 This is part of a larger *casual* general purpose streaming data platform I'm putting together.  See 
                 the <a href="http://github.com/arscan/streamed">Github repo</a> for information. It is a work in progress!
-                
             </div>
         </div>
         <div id="right" class="column">
@@ -66,11 +66,11 @@
                 <div id="rightmapoverlay"></div>
             </div>
             <div id="rightmiddle">
-               <div class="smallwhite">ident %</div>
-               <div class="smallwhite">random</div>
-               <div class="smallwhite">random</div>
+               <div class="smallwhite">Identified</div>
+               <div class="smallwhite">Tweets</div>
+               <div class="smallwhite">Random</div>
                <div class="bigred" id="identpercent">00000</div>
-               <div class="bigred" id="fancy1">00000</div>
+               <div class="bigred" id="twitter">00000</div>
                <div class="bigred" id="fancy2">00000</div>
             </div>
             <div id="rightbottom">
@@ -96,6 +96,18 @@
     </div>
 </body>
 <script src="/viz/wargames/js/scripts.js"></script>
+<script type="text/javascript">
+    // $.getJSON('http://cdn.api.twitter.com/1/urls/count.json?url=encodeURIComponent(document.URL)&callback=?', null, function (results) {
+    //         alert("done " + results.count);
+    //                       });
+/*
+    function twitCount(data){
+        alert(data.count);
+    }
+    */
+    // jsonparser1();
+</script>    
+
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

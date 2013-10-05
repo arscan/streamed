@@ -150,13 +150,10 @@ var updateStats = function(){
     $("#elapsedtime").text(pad(elapsed,5));
     $("#eventpermin").text(pad(parseInt(60*eventcount/elapsed),5));
     $("#eventtotal").text(pad(eventcount,5));
-    $("#identpercent").text(pad(parseInt(100*identyes/eventcount),5));
+    $("#identpercent").text(pad(parseInt(100*identyes/eventcount),2) + "%");
     $("#usatotal").text(pad(usacount,5));
     $("#europetotal").text(pad(europecount,5));
     $("#australiatotal").text(pad(australiacount,5));
-    if(Math.random()<.1){
-        $("#fancy1").text(pad(parseInt(Math.random()*10000),5));
-    }
     if(Math.random()<.1){
         $("#fancy2").text(pad(parseInt(Math.random()*10000),5));
     }
@@ -168,8 +165,14 @@ var updateStatsLoop = function(){
 }
 updateStatsLoop();
 
+var updateTwitterLoop = function(){
+    setTimeout(updateTwitterLoop,100000);
+    $.getJSON('http://cdn.api.twitter.com/1/urls/count.json?url=encodeURIComponent(document.URL)&callback=?', null, function (results) {
+            $("#twitter").text(pad(results.count,5));
+            });
+}
 
-
+updateTwitterLoop();
 
 d3.select(self.frameElement).style("height", height + "px");
 
