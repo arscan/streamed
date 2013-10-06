@@ -43,10 +43,10 @@ app.use(express.static(__dirname + '/public'));
 app.get('/:channel/:viz', function(req, res){ return handleRequest(req.params.channel, req.params.viz.toLowerCase(), req,res); }); 
 app.get('/:channel', function(req,res){ return handleRequest(req.params.channel,null, req,res); });
 app.get('/', function(req,res){
-    console.log("Getting / for " + req.get("host"));
-    if(domainlist[req.get("host")]){
-        console.log("WHAT TO DO A CUSTOM DOMAIN!!! ");
-        return handleRequest(domainlist[req.get("host")],channellist[domainlist[req.get("host")]].viz, req, res);
+    var d = req.get("host").replace("www.","");
+    console.log("Getting / for " + d);
+    if(domainlist[d]){
+        return handleRequest(domainlist[d],channellist[domainlist[d]].viz, req, res);
     } else {
         res.sendfile(__dirname + '/public/index_real.html');
     }
