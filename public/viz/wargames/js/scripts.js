@@ -6,7 +6,14 @@ $("#rightbottom1text").streamwriter({enabled:false,charblock: 20, maxlines:9, ti
 $("#rightbottom2text").streamwriter({enabled:false,maxlines:9, charblock: 20, timeout: 20});
 $("#leftbottom2text").streamwriter({enabled:false,maxlines:9, charblock: 20, timeout: 20});
 
-var socket = io.connect(document.URL.split('/').slice(0,4).join('/'));
+var socket;
+if(document.URL.split("/")[3].length == 0){
+    // we are on a custom domain so we connect to a special domain channel
+    socket = io.connect(document.URL.split('/').slice(0,4).join('/') + document.URL.split('/')[2]);
+} else {
+    // otherwise, we just connect to the regular channel
+    socket = io.connect(document.URL.split('/').slice(0,4).join('/'));
+}
 
 var width = 500,
     height = 300;

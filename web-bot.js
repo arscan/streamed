@@ -1,70 +1,101 @@
 var _ = require('underscore'),
     irc = require('irc'),
-    util = require('util');
+    util = require('util'),
+    fs = require('fs');
 
 var express = require('express')
   , app = express()
   , http = require('http')
   , webserver = http.createServer(app)
   , io = require('socket.io').listen(webserver, {'log level': 1})
-  , port = 8000;
+  , port = 8000
+  , defaultviz = "wargames";
+
 
 var server = "irc.robscanlon.com",
     mynick = "web" + Math.floor(Math.random() * 1000),
-    mainchannel = "#controlcenter",
     masterbot = "prime";
 
 var locationserver = "http://loc.robscanlon.com:8080/";
 
-var channels = [];
+var channellist = {};
+var domainlist = {};
 
-
-var ircclient = new irc.Client(server, mynick, {debug: true, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#controlcenter"]});
+var ircclient = new irc.Client(server, 
+        mynick, 
+        {debug: true, 
+            showErrors: true, 
+            floodProtection: false, 
+            floodProtectionDelay: 0, 
+            channels: ["#controlcenter"]
+        });
 
 /* listeners */
 
-ircclient.addListener('error', function(message) {
-         console.log('irc error: ' +  util.inspect(message));
+ircclient.on('error', function(message) {
+     console.log('irc error: ' +  util.inspect(message));
  });
 
 
-var joinChannel = function(channelname){
-    if(_.contains(channels,channelname)) return;
+app.enable('trust proxy');
 
-    channels.push(channelname);
+app.use(express.static(__dirname + '/public'));
+app.get('/:channel/:viz', function(req, res){ return handleRequest(req.params.channel, req.params.viz.toLowerCase(), req,res); }); 
+app.get('/:channel', function(req,res){ return handleRequest(req.params.channel,null, req,res); });
+app.get('/', function(req,res){
+    console.log("Getting / for " + req.get("host"));
+    if(domainlist[req.get("host")]){
+        console.log("WHAT TO DO A CUSTOM DOMAIN!!! ");
+        return handleRequest(domainlist[req.get("host")],channellist[domainlist[req.get("host")]].viz, req, res);
+    } else {
+        res.sendfile(__dirname + '/public/index_real.html');
+    }
+});
+
+var handleRequest = function(channel, viz, req,res){
+    console.log("handling request for " + channel + " and viz " + viz);
+    if(!channellist[channel]){
+        res.send(404,"No such channel");
+        return;
+    }
+    if(!viz){
+        viz=channellist[channel].viz;
+    }
+
+    fs.exists(__dirname + "/public/viz/" + viz, function(vizexists){
+        if(!vizexists){
+            res.send(404,"No such visualization");
+            return;
+        }
+        res.sendfile(__dirname + '/public/viz/' + viz + '/index.html');
+    });
+}
+io.sockets.on('connection', function (socket) {
+    var address = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.address;
+    socket.on('disconnect', function () {
+        console.log("Dropped connection from " + address);
+    });
+    console.log("New connection from " + address);
+});
+
+
+var joinChannel = function(channelname){
+    if(channellist[channelname.substring(1)]) return;
+    channellist[channelname.substring(1)] = {viz: defaultviz, domain: "", title: channelname.substring(1)};
     ircclient.join(channelname);
     console.log("joining " + channelname);
-    ircclient.say(mainchannel, "Joining " + channelname);
-    // TODO: CLEAN THIS UP
-    app.get('/' + channelname.substring(1,channelname.length), function (req, res) {
-        // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
-        res.sendfile(__dirname + '/public/viz/wargames/index.html');
-        io.sockets.on('connection', function (socket) {
-            var address = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.address;
-            socket.on('disconnect', function () {
-                console.log("Dropped connection from " + address);
-            });
-
-            console.log("New connection from " + address);
-        });
-    });
-    app.get('/' + channelname.substring(1,channelname.length) + '/:viz', function (req, res) {
-        // res.sendfile(__dirname + '/public/viz/' + channelname.substring(1,channelname.length) + '/index.html');
-        res.sendfile(__dirname + '/public/viz/wargames/index.html');
-        io.sockets.on('connection', function (socket) {
-            var address = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.address;
-            socket.on('disconnect', function () {
-                console.log("Dropped connection from " + address);
-            });
-            console.log("New connection from " + address);
-        });
-    });
+    ircclient.say("#controlcenter", "Joining " + channelname);
 }
 
 var partChannel = function(channelname){
     ircclient.part(channelname);
     console.log("parting " + channelname);
-    ircclient.say(mainchannel, "Parting " + channelname);
+    if(domainlist[channellist[channelname.substring(1)]]){
+        console.log("deregistering domain too!"); 
+        delete domainlist[channellist[channelname.substring(1)]];
+    }
+    delete channellist[channelname.substring(1)];
+    ircclient.say("#controlcenter", "Parting " + channelname);
 }
 
 
@@ -93,9 +124,36 @@ ircclient.on("join",function(channel, nick){
         ircclient.send('MODE', channel, '+o', nick);
     }
 });
+ircclient.on("topic", function(channel, topic){
+    var vizparsed = /\[([^\]]*)\]/.exec(topic)
+    var domainparsed = /%([^%]*)%/.exec(topic)
+    var viz = defaultviz;
+    var domain = "";
+    var title = topic;
+    if(vizparsed){
+        viz = vizparsed[1];
+    }
+    if(domainparsed){
+        domain = domainparsed[1];
+    }
+    title = topic.substring(Math.max(topic.lastIndexOf("%"), topic.lastIndexOf("]")) + 1).trim();
+    
+    if(channellist[channel.substring(1)]){
+        console.log("Changed topic of channel " + channel + " viz: " + viz + " domain: " + domain + " title: " + title);
+        channellist[channel.substring(1)] = {"viz": viz, "domain":domain, "title": title};
+        if(domain.length){
+            domainlist[domain] = channel.substring(1);
+        }
+
+    } else {
+        console.log("Couldn't find channel " + channel + " when topics came through!");
+    }
+    
+
+});
 
 
-ircclient.addListener('message', function(to,from,message){
+ircclient.on('message', function(to,from,message){
     if(from == "#controlcenter" && to == masterbot){
         console.log("to: " + to, " from: " + from, " message: " + message);
         if(message.indexOf("New channel: ") == 0){
@@ -121,11 +179,20 @@ ircclient.addListener('message', function(to,from,message){
                         arr.push("lat: " + r.lat);
                         arr.push("lng: " + r.lng);
                     }
-                    io.of('/' + from.substring(1,from.length)).emit('message',arr);
+                    if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
+                        console.log("emitting to domain " + channellist[from.substring(1)].domain);
+                        io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
+                    }
+                    io.of('/' + from.substring(1)).emit('message',arr);
                     });
                 });
         } else {
-           io.of('/' + from.substring(1,from.length)).emit('message',arr);
+
+            if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
+                console.log("emitting to domain " + channellist[from.substring(1)].domain);
+                io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
+            }
+            io.of('/' + from.substring(1)).emit('message',arr);
         }
 
     }
@@ -136,6 +203,7 @@ var pollConnected = function(){
     console.log("Num active connections: " + Object.keys(io.connected).length);
 }
 pollConnected();
+
 io.sockets.on('disconnect', function() {
     console.log('Got disconnect!');
 });
@@ -152,5 +220,4 @@ var stripColors = function(text){
 /* web stuff */
 webserver.listen(port);
 
-app.use(express.static(__dirname + '/public'));
 
