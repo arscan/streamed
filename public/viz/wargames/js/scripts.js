@@ -9,7 +9,7 @@ $("#leftbottom2text").streamwriter({enabled:false,maxlines:9, charblock: 20, tim
 var socket;
 if(document.URL.split("/")[3].length == 0){
     // we are on a custom domain so we connect to a special domain channel
-    socket = io.connect(document.URL.split('/').slice(0,4).join('/') + document.URL.split('/')[2]);
+    socket = io.connect(document.URL.split('/').slice(0,4).join('/').replace("www.","") + document.URL.split('/')[2]);
 } else {
     // otherwise, we just connect to the regular channel
     socket = io.connect(document.URL.split('/').slice(0,4).join('/'));

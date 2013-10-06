@@ -180,7 +180,6 @@ ircclient.on('message', function(to,from,message){
                         arr.push("lng: " + r.lng);
                     }
                     if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
-                        console.log("emitting to domain " + channellist[from.substring(1)].domain);
                         io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
                     }
                     io.of('/' + from.substring(1)).emit('message',arr);
@@ -189,7 +188,6 @@ ircclient.on('message', function(to,from,message){
         } else {
 
             if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
-                console.log("emitting to domain " + channellist[from.substring(1)].domain);
                 io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
             }
             io.of('/' + from.substring(1)).emit('message',arr);
