@@ -172,12 +172,12 @@ ircclient.on('message', function(to,from,message){
     } else {
         var output = {"raw" : stripColors(message), "data": [], "location": {"name":null, "lat": null, "lng":null}};
         var arr = stripColors(message).split(" * ");
-        if(channellist[from.susbtring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length){
+        if(channellist[from.substring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length){
             output.data = _.map(channellist[from.substring(1)].fields, function(num){return arr[num-1]});
         } else {
             output.data = arr;
         }
-        if(channellist[from.susbtring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length && channellist[from.substring(1)].fields[0] > 0 && channellist[from.substring(1)].fields[0] <= arr.length && arr[channellist[from.substring(1)].fields[0]-1].length && arr[channellist[from.substring(1)].fields[0]-1] !== "-"){
+        if(channellist[from.substring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length && channellist[from.substring(1)].fields[0] > 0 && channellist[from.substring(1)].fields[0] <= arr.length && arr[channellist[from.substring(1)].fields[0]-1].length && arr[channellist[from.substring(1)].fields[0]-1] !== "-"){
             var loc = arr[channellist[from.substring(1)].fields[0]-1];
             
 
