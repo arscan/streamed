@@ -188,18 +188,15 @@ socket.on('message', function (datain) {
     console.log(datain);
 
     var data = {};
-    data.actor = datain[3];
-    data.repo = datain[0];
-    data.type = datain[5];
-    data.location = datain[4];
-    data.url = datain[2];
-    if(datain.length > 6){
-        data.latlng = {};
-        data.latlng.lat = datain[6].replace("lat: ", "");
-        data.latlng.lng = datain[7].replace("lng: ", "");
-
-
+    if(datain.location.name){
+       data.location = datain.location.name;
+       data.latlng = {"lat": datain.location.lat, "lng": datain.location.lng};
     }
+    
+    data.actor = datain.data[1];
+    data.repo = datain.data[2];
+    data.type = datain.data[3];
+    data.url = datain[4];
 
     setTimeout(function(){
         if(paused) return;

@@ -17,6 +17,7 @@ var server = "irc.robscanlon.com",
     masterbot = "prime";
 
 var locationserver = "http://loc.robscanlon.com:8080/";
+var ipserver = "http://loc.robscanlon.com:8081/";
 
 var channellist = {};
 var domainlist = {};
@@ -75,6 +76,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log("Dropped connection from " + address);
     });
+    console.log("Num active connections: " + Object.keys(io.connected).length);
     console.log("New connection from " + address);
 });
 
@@ -130,8 +132,14 @@ ircclient.on("topic", function(channel, topic){
     var viz = defaultviz;
     var domain = "";
     var title = topic;
+    var fields = [];
+    console.log("----------topic change");
     if(vizparsed){
         viz = vizparsed[1];
+        if(viz.split("|").length > 0){
+            fields = _.map(viz.split("|")[1].split(","),function(val){return val.trim()});
+            viz = viz.split("|")[0];
+        }
     }
     if(domainparsed){
         domain = domainparsed[1];
@@ -139,8 +147,8 @@ ircclient.on("topic", function(channel, topic){
     title = topic.substring(Math.max(topic.lastIndexOf("%"), topic.lastIndexOf("]")) + 1).trim();
     
     if(channellist[channel.substring(1)]){
-        console.log("Changed topic of channel " + channel + " viz: " + viz + " domain: " + domain + " title: " + title);
-        channellist[channel.substring(1)] = {"viz": viz, "domain":domain, "title": title};
+        console.log("Changed topic of channel " + channel + " viz: " + viz + " domain: " + domain + " title: " + title + " fields: " + fields.length);
+        channellist[channel.substring(1)] = {"viz": viz, "domain":domain, "title": title, "fields":fields};
         if(domain.length){
             domainlist[domain] = channel.substring(1);
         }
@@ -162,11 +170,19 @@ ircclient.on('message', function(to,from,message){
             partChannel(message.substring(14,message.length));
         }
     } else {
-        // io.sockets.emit('message', message);
+        var output = {"raw" : stripColors(message), "data": [], "location": {"name":null, "lat": null, "lng":null}};
         var arr = stripColors(message).split(" * ");
-        if(from == "#github" && arr.length > 4 && arr[4] !== "-"){
+        if(channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length){
+            output.data = _.map(channellist[from.substring(1)].fields, function(num){return arr[num-1]});
+        } else {
+            output.data = arr;
+        }
+        if(channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length && channellist[from.substring(1)].fields[0] > 0 && channellist[from.substring(1)].fields[0] <= arr.length && arr[channellist[from.substring(1)].fields[0]-1].length && arr[channellist[from.substring(1)].fields[0]-1] !== "-"){
+            var loc = arr[channellist[from.substring(1)].fields[0]-1];
+            
 
-            var loc = arr[4];
+            output.location.name = loc;
+
             http.get(locationserver + encodeURIComponent(loc), function(res){
                 var buffer = "";
                 res.on("error", function(){
@@ -176,34 +192,30 @@ ircclient.on('message', function(to,from,message){
                 res.on("end",function(){
                     r = JSON.parse(buffer);
                     if(r.lat && r.lng){
-                        arr.push("lat: " + r.lat);
-                        arr.push("lng: " + r.lng);
+                        output.location.lat = r.lat;
+                        output.location.lng = r.lng;
                     }
                     if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
-                        io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
+
+                        io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
                     }
-                    io.of('/' + from.substring(1)).emit('message',arr);
+                    io.of('/' + from.substring(1)).emit('message',output);
                     });
                 });
         } else {
 
             if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
-                io.of('/' + channellist[from.substring(1)].domain).emit('message',arr);
+                io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
             }
-            io.of('/' + from.substring(1)).emit('message',arr);
+            io.of('/' + from.substring(1)).emit('message',output);
         }
 
     }
 });
 
-var pollConnected = function(){
-    setTimeout(pollConnected, 10000);
-    console.log("Num active connections: " + Object.keys(io.connected).length);
-}
-pollConnected();
-
 io.sockets.on('disconnect', function() {
     console.log('Got disconnect!');
+    console.log("Num active connections: " + Object.keys(io.connected).length);
 });
 
 var stripColors = function(text){
