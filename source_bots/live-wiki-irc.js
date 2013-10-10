@@ -20,7 +20,7 @@ var colors = [
 
 
 var ircclient = new irc.Client(server, nick, {debug: false, showErrors: true, floodProtection: false, floodProtectionDelay: 0, channels: ["#wikipedia"]});
-var ircwiki = new irc.Client("irc.wikimedia.org", "arscan", {channels: ["#en.wikipedia"]});
+var ircwiki = new irc.Client("irc.wikimedia.org", "arscan", {channels: ["#en.wikipedia", "#nl.wikipedia", "#de.wikipedia", "#sv.wikipedia", "#fr.wikipedia", "#it.wikipedia", "#ru.wikipedia", "#es.wikipedia", "#es.wikipedia", "#pl.wikipedia", "#war.wikipedia", "#ceb.wikipedia", "#vi.wikipedia", "#ja.wikipedia", "#pt.wikipedia", "#zh.wikipedia"]});
 
 ircclient.addListener('error', function(message) {
          console.log('irc error: ' +  message);
@@ -139,18 +139,19 @@ var createMessage = function(m,c){
 
 ircwiki.on('message', function (from, to, message) {
     var m = createMessage(message, to);
+    console.log(to);
     console.log(m);
     ircclient.say(channel,  m);
 });
-ircwiki.on("channellist_item", function(channel_info){
-    if(/wikipedia/.exec(channel_info.name)){
-        console.log("JOINING " + channel_info.name);
-        ircwiki.join(channel_info.name);
-    }
-});
-
-setTimeout(function(){
-ircwiki.list();
-},15000);
+// ircwiki.on("channellist_item", function(channel_info){
+//     if(/[a-z][a-z]\.wikipedia/.exec(channel_info.name)){
+//         console.log("JOINING " + channel_info.name);
+//         ircwiki.join(channel_info.name);
+//     }
+// });
+// 
+// setTimeout(function(){
+// ircwiki.list();
+// },15000);
 
 
