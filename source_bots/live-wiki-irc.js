@@ -145,7 +145,7 @@ ircwiki.on('message', function (from, to, message) {
 ircwiki.on("channellist_item", function(channel_info){
     if(/wikipedia/.exec(channel_info.name)){
         console.log("JOINING " + channel_info.name);
-        ircclient.join(channel_info.name);
+        ircwiki.join(channel_info.name);
     }
 });
 
