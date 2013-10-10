@@ -185,7 +185,6 @@ ircclient.on('message', function(to,from,message){
             var loc = arr[channellist[from.substring(1)].fields[0]-1].trim();
             
             if(locationIsIP4(loc)){
-                console.log("getting " + ipserver + encodeURIComponent(loc));
                 
                 http.get(ipserver + encodeURIComponent(loc), function(res){
                     var buffer = "";
