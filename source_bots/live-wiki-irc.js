@@ -68,6 +68,10 @@ var stripColors = function(text){
 
 }
 
+var locationIsIP4  = function(loc){
+    return !!/^\d+\.\d+\.\d+\.\d+$/.exec(loc)
+}
+
 /* create a message */
 
 var createMessage = function(m){
@@ -106,8 +110,16 @@ var createMessage = function(m){
     rePattern = new RegExp(/http\:\/\/[^\s]*\s?\*\s?([^\*]*)*/);
     ret = rePattern.exec(m);
     if(ret && ret.length > 0){
-        values.push(ret[1].replace(/\s\s*$/, ''));
+        var newval = ret[1].replace(/\s\s*$/, '');
+        if(locationIsIP4(newval)){
+            values.push(newval);
+            values.push("-");
+        } else {
+            values.push("-");
+            values.push(newval);
+        }
     } else {
+        values.push('-');
         values.push('-');
     }
 
