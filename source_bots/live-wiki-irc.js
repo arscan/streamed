@@ -74,11 +74,13 @@ var locationIsIP4  = function(loc){
 
 /* create a message */
 
-var createMessage = function(m){
+var createMessage = function(m,c){
     var ret = "";
     var values = [];
 
     m = stripColors(m);
+
+    values.push(c.substring(1,3));
 
     var rePattern = new RegExp(/\[\[([^\]]*)\]\]/);
     var ret = rePattern.exec(m);
@@ -135,9 +137,20 @@ var createMessage = function(m){
     
 }
 
-ircwiki.addListener('message', function (from, to, message) {
-    var m = createMessage(message);
+ircwiki.on('message', function (from, to, message) {
+    var m = createMessage(message, to);
     console.log(m);
     ircclient.say(channel,  m);
 });
+ircwiki.on("channellist_item", function(channel_info){
+    if(/wikipedia/.exec(channel_info.name)){
+        console.log("JOINING " + channel_info.name);
+        ircclient.join(channel_info.name);
+    }
+});
+
+setTimeout(function(){
+ircwiki.list();
+},15000);
+
 

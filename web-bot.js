@@ -17,7 +17,7 @@ var server = "irc.robscanlon.com",
     masterbot = "prime";
 
 var locationserver = "http://loc.robscanlon.com:8080/";
-var ipserver = "http://loc.robscanlon.com:8081/";
+var ipserver = "http://loc.robscanlon.com:8081/json/";
 
 var channellist = {};
 var domainlist = {};
@@ -119,6 +119,10 @@ var getLocation = function(loc, cb){
 
 };
 
+var locationIsIP4  = function(loc){
+    return !!/^\d+\.\d+\.\d+\.\d+$/.exec(loc)
+}
+
 ircclient.on("join",function(channel, nick){
     if(nick == mynick){ 
         return;
@@ -178,30 +182,62 @@ ircclient.on('message', function(to,from,message){
             output.data = arr;
         }
         if(channellist[from.substring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length && channellist[from.substring(1)].fields[0] > 0 && channellist[from.substring(1)].fields[0] <= arr.length && arr[channellist[from.substring(1)].fields[0]-1].length && arr[channellist[from.substring(1)].fields[0]-1] !== "-"){
-            var loc = arr[channellist[from.substring(1)].fields[0]-1];
+            var loc = arr[channellist[from.substring(1)].fields[0]-1].trim();
             
-
-            output.location.name = loc;
-
-            http.get(locationserver + encodeURIComponent(loc), function(res){
-                var buffer = "";
-                res.on("error", function(){
-                    console.log("error looking up geonames");
-                });
-                res.on("data", function(data){buffer=buffer+data});
-                res.on("end",function(){
-                    r = JSON.parse(buffer);
-                    if(r.lat && r.lng){
-                        output.location.lat = r.lat;
-                        output.location.lng = r.lng;
-                    }
-                    if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
-
-                        io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
-                    }
-                    io.of('/' + from.substring(1)).emit('message',output);
+            if(locationIsIP4(loc)){
+                console.log("getting " + ipserver + encodeURIComponent(loc));
+                
+                http.get(ipserver + encodeURIComponent(loc), function(res){
+                    var buffer = "";
+                    res.on("error", function(){
+                        console.log("error looking up geonames");
                     });
-                });
+                    res.on("data", function(data){buffer=buffer+data});
+                    res.on("end",function(){
+                        try{
+                            r = JSON.parse(buffer);
+                            if(r.latitude && r.longitude){
+                                output.location.lat = r.latitude;
+                                output.location.lng = r.longitude;
+                                output.location.name=r.city + " " + r.country_name;
+                            }
+                        } catch (ex){
+                            console.log("error looking up ip address " + loc + ": " + ex);
+
+                        }
+                        if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
+
+                            io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
+                        }
+                        io.of('/' + from.substring(1)).emit('message',output);
+                        });
+                    });
+
+
+            } else {
+
+                output.location.name = loc;
+
+                http.get(locationserver + encodeURIComponent(loc), function(res){
+                    var buffer = "";
+                    res.on("error", function(){
+                        console.log("error looking up geonames");
+                    });
+                    res.on("data", function(data){buffer=buffer+data});
+                    res.on("end",function(){
+                        r = JSON.parse(buffer);
+                        if(r.lat && r.lng){
+                            output.location.lat = r.lat;
+                            output.location.lng = r.lng;
+                        }
+                        if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
+
+                            io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
+                        }
+                        io.of('/' + from.substring(1)).emit('message',output);
+                        });
+                    });
+            }
         } else {
 
             if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
