@@ -198,7 +198,7 @@ ircclient.on('message', function(to,from,message){
                             if(r.latitude && r.longitude){
                                 output.location.lat = r.latitude;
                                 output.location.lng = r.longitude;
-                                output.location.name=r.city + " " + r.country_name;
+                                output.location.name=r.city + ", " + r.country_code;
                             }
                         } catch (ex){
                             console.log("error looking up ip address " + loc + ": " + ex);
