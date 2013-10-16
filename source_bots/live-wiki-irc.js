@@ -111,7 +111,7 @@ var createMessage = function(m,c){
 
     rePattern = new RegExp(/http\:\/\/[^\s]*\s?\*\s?([^\*]*)*/);
     ret = rePattern.exec(m);
-    if(ret && ret.length > 0){
+    if(ret && ret.length > 0 && ret[1]){
         var newval = ret[1].replace(/\s\s*$/, '');
         if(locationIsIP4(newval)){
             values.push(newval);
