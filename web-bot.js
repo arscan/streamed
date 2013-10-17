@@ -228,17 +228,21 @@ ircclient.on('message', function(to,from,message){
                     });
                     res.on("data", function(data){buffer=buffer+data});
                     res.on("end",function(){
-                        r = JSON.parse(buffer);
-                        if(r.lat && r.lng){
-                            output.location.lat = r.lat;
-                            output.location.lng = r.lng;
-                        }
-                        if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
+                        try{
+                            r = JSON.parse(buffer);
+                            if(r.lat && r.lng){
+                                output.location.lat = r.lat;
+                                output.location.lng = r.lng;
+                            }
+                            if(channellist[from.substring(1)] && channellist[from.substring(1)].domain.length){
 
-                            io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
+                                io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
+                            }
+                            io.of('/' + from.substring(1)).emit('message',output);
+                        } catch (ex) {
+                            console.log("Error parsing location")
                         }
-                        io.of('/' + from.substring(1)).emit('message',output);
-                        });
+                            });
                     });
             }
         } else {
