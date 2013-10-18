@@ -74,7 +74,7 @@ app.get('/', function(req,res){
     console.log("Getting / for " + d);
     if(domainlist[d]){
         //return handleRequest(domainlist[d],channellist[domainlist[d]].viz, req, res);
-        return handleRequest(domainlist[d],"arscan", 7046646, "index.html", req, res);
+        return handleGistViz(domainlist[d],"arscan", 7046646, "index.html", req, res);
     } else {
         res.sendfile(__dirname + '/public/index_real.html');
     }
