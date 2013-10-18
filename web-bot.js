@@ -1,7 +1,9 @@
 var _ = require('underscore'),
     irc = require('irc'),
     util = require('util'),
-    fs = require('fs');
+    fs = require('fs'),
+    https = require('https'),
+    mime = require('mime');
 
 var express = require('express')
   , app = express()
@@ -41,17 +43,89 @@ ircclient.on('error', function(message) {
 app.enable('trust proxy');
 
 app.use(express.static(__dirname + '/public'));
-app.get('/:channel/:viz', function(req, res){ return handleRequest(req.params.channel, req.params.viz.toLowerCase(), req,res); }); 
-app.get('/:channel', function(req,res){ return handleRequest(req.params.channel,null, req,res); });
+app.get('/:channel/:gistuser/:gistid', function(req, res){ 
+
+    return handleGistViz(req.params.channel,req.params.gistuser, req.params.gistid, "index.html", req, res);
+}); 
+app.get('/:channel/:gistuser/:gistid/:gistfile', function(req, res){ 
+    // res.send("getting gist file " + req.params.gistfile);
+
+    return handleGistViz(req.params.channel,req.params.gistuser, req.params.gistid, req.params.gistfile, req, res);
+    
+}); 
+app.get('/:channel', function(req, res){ 
+    // res.send("getting gist file " + req.params.gistfile);
+    if(req.path.slice(-1) !== "/"){
+        res.redirect(req.path + "/");
+        return;
+    }
+
+    return handleGistViz(req.params.channel, "arscan", 7046646, "index.html", req, res);
+    
+}); 
+app.get('/:channel/:gistfile', function(req, res){ 
+    // res.send("getting gist file " + req.params.gistfile);
+
+    return handleGistViz(req.params.channel, "arscan", 7046646, req.params.gistfile, req, res);
+    
+}); 
 app.get('/', function(req,res){
     var d = req.get("host").replace("www.","");
     console.log("Getting / for " + d);
     if(domainlist[d]){
-        return handleRequest(domainlist[d],channellist[domainlist[d]].viz, req, res);
+        //return handleRequest(domainlist[d],channellist[domainlist[d]].viz, req, res);
+        return handleRequest(domainlist[d],"arscan", 7046646, "index.html", req, res);
     } else {
         res.sendfile(__dirname + '/public/index_real.html');
     }
 });
+
+var handleGistViz = function(channel, gistuser, gistid, gistfile, req, res){
+    var options = {
+        hostname: 'gist.github.com',
+        port: 443,
+        path: '/' + gistuser + '/' + gistid + '/raw/' + gistfile,
+        method: 'GET'
+    };
+    // console.log("trying to get https://gist.github.com/" + gistuser + "/" + gistid + "/" + gistfile);
+    console.log("handling request for " + channel);
+    if(!channellist[channel]){
+        res.send(404,"No such channel");
+        return;
+    }
+
+    var newrequest= https.request(options, function(response){
+        var headers = response.headers;
+        headers["content-type"] = mime.lookup(gistfile);
+        response.on('data', function(data){
+            res.write(data,'binary');
+        });
+        response.on('end', function(){
+            res.end();
+
+        });
+        res.writeHead(response.statusCode, headers);
+    });
+    newrequest.end();
+    newrequest.on("error", function(error){
+        console.log("error getting data from github gists: " + error);
+
+
+    });
+
+}
+
+// app.get('/:channel/:viz', function(req, res){ return handleRequest(req.params.channel, req.params.viz.toLowerCase(), req,res); }); 
+// app.get('/:channel', function(req,res){ return handleRequest(req.params.channel,null, req,res); });
+// app.get('/', function(req,res){
+//     var d = req.get("host").replace("www.","");
+//     console.log("Getting / for " + d);
+//     if(domainlist[d]){
+//         return handleRequest(domainlist[d],channellist[domainlist[d]].viz, req, res);
+//     } else {
+//         res.sendfile(__dirname + '/public/index_real.html');
+//     }
+// });
 
 var handleRequest = function(channel, viz, req,res){
     console.log("handling request for " + channel + " and viz " + viz);
@@ -109,7 +183,7 @@ var getLocation = function(loc, cb){
 
         });
         res.on('end', function(){
-            
+
             cb(data);
 
         });
@@ -134,33 +208,33 @@ ircclient.on("topic", function(channel, topic){
     var vizparsed = /\[([^\]]*)\]/.exec(topic)
     var domainparsed = /%([^%]*)%/.exec(topic)
     var viz = defaultviz;
-    var domain = "";
-    var title = topic;
-    var fields = [];
-    console.log("----------topic change");
-    if(vizparsed){
-        viz = vizparsed[1];
-        if(viz.split("|").length > 0){
-            fields = _.map(viz.split("|")[1].split(","),function(val){return val.trim()});
-            viz = viz.split("|")[0];
-        }
+var domain = "";
+var title = topic;
+var fields = [];
+console.log("----------topic change");
+if(vizparsed){
+    viz = vizparsed[1];
+    if(viz.split("|").length > 0){
+        fields = _.map(viz.split("|")[1].split(","),function(val){return val.trim()});
+        viz = viz.split("|")[0];
     }
-    if(domainparsed){
-        domain = domainparsed[1];
-    }
-    title = topic.substring(Math.max(topic.lastIndexOf("%"), topic.lastIndexOf("]")) + 1).trim();
-    
-    if(channellist[channel.substring(1)]){
-        console.log("Changed topic of channel " + channel + " viz: " + viz + " domain: " + domain + " title: " + title + " fields: " + fields.length);
-        channellist[channel.substring(1)] = {"viz": viz, "domain":domain, "title": title, "fields":fields};
-        if(domain.length){
-            domainlist[domain] = channel.substring(1);
-        }
+}
+if(domainparsed){
+    domain = domainparsed[1];
+}
+title = topic.substring(Math.max(topic.lastIndexOf("%"), topic.lastIndexOf("]")) + 1).trim();
 
-    } else {
-        console.log("Couldn't find channel " + channel + " when topics came through!");
+if(channellist[channel.substring(1)]){
+    console.log("Changed topic of channel " + channel + " viz: " + viz + " domain: " + domain + " title: " + title + " fields: " + fields.length);
+    channellist[channel.substring(1)] = {"viz": viz, "domain":domain, "title": title, "fields":fields};
+    if(domain.length){
+        domainlist[domain] = channel.substring(1);
     }
-    
+
+} else {
+    console.log("Couldn't find channel " + channel + " when topics came through!");
+}
+
 
 });
 
@@ -183,9 +257,9 @@ ircclient.on('message', function(to,from,message){
         }
         if(channellist[from.substring(1)] && channellist[from.substring(1)].fields && channellist[from.substring(1)].fields.length && channellist[from.substring(1)].fields[0] > 0 && channellist[from.substring(1)].fields[0] <= arr.length && arr[channellist[from.substring(1)].fields[0]-1].length && arr[channellist[from.substring(1)].fields[0]-1] !== "-"){
             var loc = arr[channellist[from.substring(1)].fields[0]-1].trim();
-            
+
             if(locationIsIP4(loc)){
-                
+
                 http.get(ipserver + encodeURIComponent(loc), function(res){
                     var buffer = "";
                     res.on("error", function(){
@@ -213,8 +287,8 @@ ircclient.on('message', function(to,from,message){
                             io.of('/' + channellist[from.substring(1)].domain).emit('message',output);
                         }
                         io.of('/' + from.substring(1)).emit('message',output);
-                        });
                     });
+                });
 
 
             } else {
@@ -242,8 +316,8 @@ ircclient.on('message', function(to,from,message){
                         } catch (ex) {
                             console.log("Error parsing location")
                         }
-                            });
                     });
+                });
             }
         } else {
 
