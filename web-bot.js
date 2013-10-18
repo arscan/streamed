@@ -54,6 +54,10 @@ app.get('/:channel/:gistuser/:gistid/:gistfile', function(req, res){
     
 }); 
 app.get('/:channel', function(req, res){ 
+    var d = req.get("host").replace("www.","");
+    if(domainlist[d]){
+        return handleGistViz(domainlist[d],"arscan", 7046646, req.params.channel, req, res);
+    } 
     // res.send("getting gist file " + req.params.gistfile);
     if(req.path.slice(-1) !== "/"){
         res.redirect(req.path + "/");
