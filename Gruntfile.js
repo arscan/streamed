@@ -24,7 +24,9 @@ module.exports = function(grunt) {
                     beforeEach: true,
                     it: true,
                     setTimeout: true,
-                    console: true
+                    console: true,
+                    before: true,
+                    after: true
                 }
             }
         },

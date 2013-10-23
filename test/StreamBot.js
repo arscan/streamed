@@ -258,10 +258,11 @@ describe("StreamBot", function(){
 
         it("should get messages sent to a given channel", function(done){
             stream.on('data', function(data){
+                data.message.should.be.equal("Data!");
                 done();
             });
 
-            ircClient.sayfrom("somebot", channame, "Data");
+            ircClient.sayfrom("somebot", channame, "Data!");
           
         });
 
