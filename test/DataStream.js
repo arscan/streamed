@@ -140,6 +140,7 @@ describe("DataStream", function(){
                 });
                 stream.send('This is a message from [Error]');
             });
+            it("should not break when the location server isn't up");
 
             it("should send events with a good ipv4", function(done){
                 stream.on('data',function(data){
@@ -176,6 +177,8 @@ describe("DataStream", function(){
                 });
                 stream.send('This is a message from [0.0.0.0]');
             });
+
+            it("should not break when the ip server isn't up");
         });
 });
 
