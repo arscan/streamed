@@ -140,7 +140,14 @@ describe("DataStream", function(){
                 });
                 stream.send('This is a message from [Error]');
             });
-            it("should not break when the location server isn't up");
+            it("should not break when the location server isn't up", function(done){
+                var brokenStream =  new DataStream('id','Title','arscan',54321,'vizdomain.com', {locationToLatLngServer: "http://broke", IPv4ToLatLngServer: "http://broke"});
+
+                brokenStream.on('data',function(data){
+                    done();
+                });
+                brokenStream.send('This is a message from [Boston]');
+            });
 
             it("should send events with a good ipv4", function(done){
                 stream.on('data',function(data){
@@ -178,7 +185,17 @@ describe("DataStream", function(){
                 stream.send('This is a message from [0.0.0.0]');
             });
 
-            it("should not break when the ip server isn't up");
+            it("should not break when the ip server isn't up", function(done){
+
+                var brokenStream =  new DataStream('id','Title','arscan',54321,'vizdomain.com', {locationToLatLngServer: "http://broke", IPv4ToLatLngServer: "http://broke"});
+
+                brokenStream.on('data',function(data){
+                    done();
+                });
+                brokenStream.send('This is a message from [204.111.111.111]');
+              
+              
+            });
         });
 });
 

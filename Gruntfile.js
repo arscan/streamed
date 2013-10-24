@@ -26,7 +26,8 @@ module.exports = function(grunt) {
                     setTimeout: true,
                     console: true,
                     before: true,
-                    after: true
+                    after: true,
+                    afterEach: true
                 }
             }
         },
