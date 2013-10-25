@@ -12,7 +12,8 @@
         "express": "*",
         "JSONStream": "*",
         "mime": "*",
-        "irc": "*"
+        "irc": "*",
+        "request": "*"
     },
     "devDependencies": {
         "grunt": "*",
