@@ -13,6 +13,7 @@
         "JSONStream": "*",
         "mime": "*",
         "irc": "*",
+        "memory-cache": "*",
         "request": "*"
     },
     "devDependencies": {

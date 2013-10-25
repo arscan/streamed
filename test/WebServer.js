@@ -35,7 +35,7 @@ describe("WebServer", function(){
                 response.end();
             } else if(request.url === "/arscan/3/raw/index.html"){
                 response.writeHead(200, {"Content-Type": "text/html"});
-                response.write(Math.floor(Math.random() * 100000 ));
+                response.write("" +Math.floor(Math.random() * 100000 ));
                 response.end();
             } else if(request.url === "/arscan/1/raw/image.jpg" || request.url === "/otheruser/2/raw/image.jpg"){
                 response.writeHead(200, {"Content-Type": "image/jpeg"});
@@ -47,7 +47,7 @@ describe("WebServer", function(){
     });
 
     beforeEach(function(){
-        server = WebServer.createWebServer("localhost", 5555, {"gistserver":"http://localhost:5556/"});
+        server = WebServer.createWebServer("localhost", 5555, {"gistserver":"http://localhost:5556/", "cacheTimeout":500});
     });
     afterEach(function(done){
         server.close(done);
@@ -114,11 +114,27 @@ describe("WebServer", function(){
 
         });
         it("should cache responses", function(done){
-            checkResponse("/arscan/2/index.html", function(data){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
+            checkResponse("/channel/", function(data){
                 var response1 = data;
-                checkResponse("/arscan/2/index.html", function(data){
-                    data.should.equal(response1);
+                checkResponse("/channel/arscan/3/", function(data2){
+                    data2.should.equal(response1);
                     done();
+                });
+            });
+
+        });
+        it("should clear the cache after a time", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
+            checkResponse("/channel/", function(data){
+                checkResponse("/channel/arscan/3/", function(data2){
+                    data2.should.equal(data);
+                    setTimeout(function(){
+                        checkResponse("/channel/arscan/3/", function(data3){
+                            data3.should.not.equal(data);
+                            done();
+                        });
+                    }, 501);
                 });
             });
 
