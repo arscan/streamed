@@ -33,7 +33,7 @@ module.exports = function(grunt) {
             }
         },
         mochaTest: {
-            src: ['test/**/*.js'],
+            src: ['test/**/*_test.js'],
         }
     });
 

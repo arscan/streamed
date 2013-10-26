@@ -1,7 +1,7 @@
 /*jshint expr: true*/
 
 var StreamBot = require('../lib/StreamBot.js'),
-    MockIRCClient = require('./MockIRCClient.js'),
+    MockIRCClient = require('../test/lib/MockIRCClient.js'),
     EventEmitter = require('events').EventEmitter,
     should = require('should'),
     util = require('util'),

@@ -1,11 +1,12 @@
 /*jshint expr: true*/
 
 var WebServer = require('../lib/WebServer.js'),
-DataStream = require('../lib/DataStream.js'),
-should = require('should'),
-util = require('util'),
-http = require('http'),
-assert = require('assert');
+    DataStream = require('../lib/DataStream.js'),
+    GistServer = require('../test/lib/MockGistServer.js'),
+    should = require('should'),
+    util = require('util'),
+    http = require('http'),
+    assert = require('assert');
 
 
 var checkResponse = function(path, cb){
@@ -21,30 +22,8 @@ var checkResponse = function(path, cb){
 };
 
 describe("WebServer", function(){
-    var server, gistserver;
-    before(function(){
-        /* this is the dummy gist server for testing purposes */
-        gistserver = http.createServer(function(request, response) {
-            if(request.url === "/arscan/1/raw/index.html"){
-                response.writeHead(200, {"Content-Type": "text/html"});
-                response.write('Channel with gistid 1');
-                response.end();
-            } else if(request.url === "/otheruser/2/raw/index.html"){
-                response.writeHead(200, {"Content-Type": "text/html"});
-                response.write('Channel with gistid 2');
-                response.end();
-            } else if(request.url === "/arscan/3/raw/index.html"){
-                response.writeHead(200, {"Content-Type": "text/html"});
-                response.write("" +Math.floor(Math.random() * 100000 ));
-                response.end();
-            } else if(request.url === "/arscan/1/raw/image.jpg" || request.url === "/otheruser/2/raw/image.jpg"){
-                response.writeHead(200, {"Content-Type": "image/jpeg"});
-                response.write("xxx");
-                response.end();
-            }
-
-        }).listen(5556);
-    });
+    var server, 
+        gistserver = GistServer.createGistServer(5556);
 
     beforeEach(function(){
         server = WebServer.createWebServer("localhost", 5555, {"gistserver":"http://localhost:5556/", "cacheTimeout":500});
@@ -53,7 +32,7 @@ describe("WebServer", function(){
         server.close(done);
     });
 
-    describe("functions", function(){
+    describe("basic", function(){
         it("should get a default request", function(done){
             checkResponse("/", function(data){
                 data.should.contain("Welcome");
@@ -61,6 +40,8 @@ describe("WebServer", function(){
             });
 
         });
+    });
+    describe("#addStream", function(){
         it("should get a channel with a viz with a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
             checkResponse("/channel/", function(data){
@@ -134,10 +115,37 @@ describe("WebServer", function(){
                             data3.should.not.equal(data);
                             done();
                         });
-                    }, 501);
+                    }, 501); // cache timeout is 500ms in the test server
                 });
             });
 
+        });
+    });
+    describe("#removeStream",function(){
+        beforeEach(function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
+            done();
+        });
+        it("remove a stream that is not longer there", function(done){
+            checkResponse("/channel/", function(body){
+                body.should.equal("Channel with gistid 1");
+                server.removeStream("channel");
+                checkResponse("/channel/", function(body){
+                    body.should.equal("No such stream");
+                    done();
+                });
+            }); 
+        });
+        it("remove a stream if the stream sends an event saying that it should", function(done){
+            var stream = server.getStream("channel");
+            checkResponse("/channel/", function(body){
+                body.should.equal("Channel with gistid 1");
+                stream.close();
+                checkResponse("/channel/", function(body){
+                    body.should.equal("No such stream");
+                    done();
+                });
+            }); 
         });
     });
 });
