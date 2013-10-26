@@ -121,6 +121,13 @@ describe("WebServer", function(){
 
         });
     });
+    describe("#getStream",function(){
+        it("should get a stream by id", function(){
+            server.addStream(new DataStream("xyz", "This is the title of the stream", "arscan", 1));
+            server.getStream("xyz").id.should.equal("xyz");
+        });
+    });
+
     describe("#removeStream",function(){
         beforeEach(function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
