@@ -3,7 +3,7 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         jshint: {
-            all: ['Gruntfile.js','test/**/*.js', 'lib/**/*.js'],
+            all: ['Gruntfile.js','index.js', 'test/**/*.js', 'lib/**/*.js'],
 
             options: {
                 curly: true,
@@ -24,11 +24,13 @@ module.exports = function(grunt) {
                     beforeEach: true,
                     it: true,
                     setTimeout: true,
+                    setInterval: true,
                     console: true,
                     before: true,
                     after: true,
                     afterEach: true,
-                    process: true
+                    process: true,
+                    __dirname: true
                 }
             }
         },

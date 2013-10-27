@@ -9,7 +9,6 @@
         "underscore": "*",
         "nconf": "*",
         "socket.io": "*",
-        "express": "*",
         "JSONStream": "*",
         "mime": "*",
         "irc": "*",
@@ -20,7 +19,8 @@
         "grunt": "*",
         "grunt-contrib-jshint": "~0.6.4",
         "grunt-mocha-test": "~0.7.0",
-        "should": "*"
+        "should": "*",
+        "socket.io-client": "*"
     },
     "main": "./server.js",
     "engines": {

@@ -18,6 +18,23 @@ var createGistServer = function(port){
             response.writeHead(200, {"Content-Type": "image/jpeg"});
             response.write("xxx");
             response.end();
+        } else if(request.url === "/arscan/4/raw/index.html"){
+            console.log(__dirname);
+            // var fileName = __dirname.replace('lib', 'public') +  req.url;
+            // if(fileName.charAt(fileName.length -1) === "/"){
+            //     fileName = fileName + "index.html";
+            // }
+            // 
+            // fs.readFile(fileName,
+            //             function (err, data) {
+            //                 if (err) {
+            //                     res.writeHead(404);
+            //                     return res.end('No such stream');
+            //                 }
+
+            //                 res.writeHead(200);
+            //                 res.end(data);
+            //             });
         }
 
     }).listen(port);

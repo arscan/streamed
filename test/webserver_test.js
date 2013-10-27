@@ -3,6 +3,7 @@
 var WebServer = require('../lib/WebServer.js'),
     DataStream = require('../lib/DataStream.js'),
     GistServer = require('../test/lib/MockGistServer.js'),
+    io = require('socket.io-client'),
     should = require('should'),
     util = require('util'),
     http = require('http'),
@@ -155,11 +156,85 @@ describe("WebServer", function(){
             }); 
         });
     });
+    describe("socket.io functions", function(){
+        var socket1, socket2, socketWaiting;
+
+        var createSocket = function(channel, done){
+            var socket = io.connect('http://localhost:5555', {
+                'reconnection delay' : 0, 
+                'reopen delay' : 0, 
+                'force new connection' : true
+            });
+            socket.on('connect', function() {
+                socket.emit('subscribe', channel);
+            });
+            socket.on('subscribed', function(channelsub) {
+                channel.should.equal(channelsub);
+                socketWaiting--;
+                if(socketWaiting === 0){
+                    done();
+                }
+            });
+            socket.on('disconnect', function() {
+                // console.log('disconnected...');
+            });
+            return socket;
+        };
+        beforeEach(function(done) {
+            socketWaiting = 2;
+            socket1 = createSocket("channel1", done);
+            socket2 = createSocket("channel2", done);
+        });
+        afterEach(function(done) {
+            
+            // Cleanup
+            if(socket1.socket.connected) {
+                socket1.disconnect();
+            }
+            if(socket2.socket.connected) {
+                socket2.disconnect();
+            }
+            done();
+        });
+
+        it("should get stream data for the stream that it wants if on fist channel", function(done){
+            var stream = new DataStream("channel1", "This is the title of the stream", "arscan", 4);
+
+            server.addStream(stream);
+            var rand = Math.floor(Math.random()*10000);
+            socket1.on('data', function(data){
+                data.message.should.equal(rand);
+                server.removeStream(stream.id);
+                done();
+            });
+            stream.send(rand);
+
+        });
+        it("should get stream data for the stream that it wants if on second channel", function(done){
+            var stream = new DataStream("channel2", "This is the title of the stream", "arscan", 4);
+
+            server.addStream(stream);
+            var rand = Math.floor(Math.random()*10000);
+            socket2.on('data', function(data){
+                data.message.should.equal(rand);
+                server.removeStream(stream.id);
+                done();
+            });
+            stream.send(rand);
+
+        });
+        it("shouldn't get stream data that it shouldn't get", function(done){
+            var stream = new DataStream("channel1", "This is the title of the stream", "arscan", 4);
+
+            server.addStream(stream);
+            var rand = Math.floor(Math.random()*10000);
+            socket2.on('data', function(data){
+                throw "Client on 2 got something meant for 1";
+            });
+            setTimeout(done, 1000); // give it a second to pick up on the bad message
+            stream.send(rand);
+        });
+
+    });
 });
-
-
-
-
-
-
 
