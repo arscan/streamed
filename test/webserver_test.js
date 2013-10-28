@@ -6,20 +6,19 @@ var WebServer = require('../lib/WebServer.js'),
     io = require('socket.io-client'),
     should = require('should'),
     util = require('util'),
-    http = require('http'),
+    request = require('request'),
     assert = require('assert');
 
+var checkResponse = function(path, host, cb){
+    var headers = {};
 
-var checkResponse = function(path, cb){
-    http.get("http://localhost:5555" + path, function(res){
-        var buffer="";
-        res.on("data",function(data){
-            buffer+=data;
-        });
-        res.on("end", function(){
-            cb(buffer, res);
-        });
+    if(host){
+        headers["host"] = host;
+    }
+    request.get({url: "http://localhost:5555" + path, followRedirect: false, headers: headers}, function(error, response, body){
+        cb(body, response);
     });
+
 };
 
 describe("WebServer", function(){
@@ -35,7 +34,7 @@ describe("WebServer", function(){
 
     describe("basic", function(){
         it("should get a default request", function(done){
-            checkResponse("/", function(data){
+            checkResponse("/", null, function(data){
                 data.should.contain("Welcome");
                 done();
             });
@@ -45,7 +44,7 @@ describe("WebServer", function(){
     describe("#addStream", function(){
         it("should get a channel with a viz with a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/", function(data){
+            checkResponse("/channel/", null, function(data){
                 data.should.equal("Channel with gistid 1");
                 done();
             }); 
@@ -53,7 +52,7 @@ describe("WebServer", function(){
         });
         it("should get other resources for a channel from the gist server with default viz", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/image.jpg", function(data,res){
+            checkResponse("/channel/image.jpg", null, function(data,res){
                 res.headers["content-type"].should.equal("image/jpeg");
                 done();
             }); 
@@ -61,7 +60,7 @@ describe("WebServer", function(){
         });
         it("should redirect for just a viz without a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel", function(data, res){
+            checkResponse("/channel",null, function(data, res){
                 res.statusCode.should.equal(302);
                 res.headers["location"].should.equal("/channel/");
 
@@ -71,7 +70,7 @@ describe("WebServer", function(){
         });
         it("should get a channel and override the viz with a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/otheruser/2/", function(data){
+            checkResponse("/channel/otheruser/2/", null, function(data){
                 data.should.equal("Channel with gistid 2");
                 done();
             }); 
@@ -79,7 +78,7 @@ describe("WebServer", function(){
         });
         it("should get other resources for a channel from the gist server with overriding gists", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/otheruser/2/image.jpg", function(data,res){
+            checkResponse("/channel/otheruser/2/image.jpg", null, function(data,res){
                 res.headers["content-type"].should.equal("image/jpeg");
                 done();
             }); 
@@ -87,7 +86,7 @@ describe("WebServer", function(){
         });
         it("should redirect to add trailing slash with overriding viz if no trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/otheruser/2", function(data, res){
+            checkResponse("/channel/otheruser/2", null, function(data, res){
                 res.statusCode.should.equal(302);
                 res.headers["location"].should.equal("/channel/otheruser/2/");
 
@@ -97,9 +96,9 @@ describe("WebServer", function(){
         });
         it("should cache responses", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
-            checkResponse("/channel/", function(data){
+            checkResponse("/channel/", null, function(data){
                 var response1 = data;
-                checkResponse("/channel/arscan/3/", function(data2){
+                checkResponse("/channel/arscan/3/", null, function(data2){
                     data2.should.equal(response1);
                     done();
                 });
@@ -108,11 +107,11 @@ describe("WebServer", function(){
         });
         it("should clear the cache after a time", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
-            checkResponse("/channel/", function(data){
-                checkResponse("/channel/arscan/3/", function(data2){
+            checkResponse("/channel/", null, function(data){
+                checkResponse("/channel/arscan/3/", null, function(data2){
                     data2.should.equal(data);
                     setTimeout(function(){
-                        checkResponse("/channel/arscan/3/", function(data3){
+                        checkResponse("/channel/arscan/3/", null, function(data3){
                             data3.should.not.equal(data);
                             done();
                         });
@@ -134,11 +133,11 @@ describe("WebServer", function(){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
             done();
         });
-        it("remove a stream that is not longer there", function(done){
-            checkResponse("/channel/", function(body){
+        it("remove a stream that is no longer there", function(done){
+            checkResponse("/channel/", null, function(body){
                 body.should.equal("Channel with gistid 1");
                 server.removeStream("channel");
-                checkResponse("/channel/", function(body){
+                checkResponse("/channel/", null, function(body){
                     body.should.equal("No such stream");
                     done();
                 });
@@ -146,10 +145,10 @@ describe("WebServer", function(){
         });
         it("remove a stream if the stream sends an event saying that it should", function(done){
             var stream = server.getStream("channel");
-            checkResponse("/channel/", function(body){
+            checkResponse("/channel/", null, function(body){
                 body.should.equal("Channel with gistid 1");
                 stream.close();
-                checkResponse("/channel/", function(body){
+                checkResponse("/channel/", null, function(body){
                     body.should.equal("No such stream");
                     done();
                 });
@@ -235,6 +234,124 @@ describe("WebServer", function(){
             stream.send(rand);
         });
 
+    });
+    describe("alternate domain functions", function(){
+        it("should see that a domain is used and bypass first level directory", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1, "robscanlon.com"));
+
+            checkResponse("/", "robscanlon.com", function(data){
+                data.should.contain("Channel with gistid 1");
+                done();
+            });
+        });
+
+        it("should drop the www from the request", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1, "robscanlon.com"));
+
+            checkResponse("/", "www.robscanlon.com", function(data){
+                data.should.contain("Channel with gistid 1");
+                done();
+            });
+        });
+        it("should drop the www from the configuration", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1, "www.robscanlon.com"));
+
+            checkResponse("/", "robscanlon.com", function(data){
+                data.should.contain("Channel with gistid 1");
+                done();
+            });
+        });
+        it("should get domains with different cases", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1, "ROBSCANLON.COM"));
+
+            checkResponse("/", "robscanlon.com", function(data){
+                data.should.contain("Channel with gistid 1");
+                done();
+            });
+        });
+
+        it("shouldn't get a domain that was on a stream that got closed", function(done){
+            var stream = new DataStream("channel", "This is the title of the stream", "arscan", 1, "ROBSCANLON.COM");
+
+            server.addStream(stream);
+            stream.close();
+
+            checkResponse("/", "robscanlon.com", function(data){
+                data.should.not.contain("Channel with gistid 1");
+                done();
+            });
+        });
+        it("should get a domain that was added after the stream was created", function(done){
+            var stream = new DataStream("channel", "This is the title of the stream", "arscan", 1);
+
+            server.addStream(stream);
+
+            stream.on('domain', function(){
+                // this should have been picked up on the webserver too
+                checkResponse("/", "robscanlon.com", function(data){
+                    data.should.contain("Channel with gistid 1");
+                    done();
+                });
+
+            });
+
+            stream.setDomain("robscanlon.com");
+
+        });
+        it("should get a domain that was changed after the stream was created", function(done){
+            var stream = new DataStream("channel", "This is the title of the stream", "arscan", 1, "robscanlon.com");
+
+            server.addStream(stream);
+
+            stream.on('domain', function(){
+                // this should have been picked up on the webserver too
+                checkResponse("/", "robscanlon2.com", function(data){
+                    data.should.contain("Channel with gistid 1");
+                    checkResponse("/", "robscanlon.com", function(data){
+                        data.should.not.contain("Channel with gistid 1");
+                        done();
+                    });
+                });
+
+            });
+
+            stream.setDomain("robscanlon2.com");
+
+        });
+        it("should get a domain that was changed after the stream was created with a www in the title or wierd case", function(done){
+            var stream = new DataStream("channel", "This is the title of the stream", "arscan", 1, "example.com");
+
+            server.addStream(stream);
+
+            stream.on('domain', function(){
+                // this should have been picked up on the webserver too
+                checkResponse("/", "www.ROBSCANLON.com", function(data){
+                    data.should.contain("Channel with gistid 1");
+                    done();
+                });
+
+            });
+
+            stream.setDomain("robscanlon.com");
+
+        });
+        it("should get a domain that was changed after the stream was created with a www in the title or another wierd case", function(done){
+            var stream = new DataStream("channel", "This is the title of the stream", "arscan", 1, "example.com");
+
+            server.addStream(stream);
+
+            stream.on('domain', function(){
+                // this should have been picked up on the webserver too
+                checkResponse("/", "robscanlon.com", function(data){
+                    data.should.contain("Channel with gistid 1");
+                    done();
+                });
+
+            });
+
+            stream.setDomain("www.RoBscanloN.com");
+
+        });
     });
 });
 

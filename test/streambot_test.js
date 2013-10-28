@@ -142,8 +142,7 @@ describe("StreamBot", function(){
                 ircClient.on('message', function(user,chan,message){
                     if(user === "bot" && message.indexOf("Topic change in " + channame) === 0){
                         bot.streams[channame.substring(1)].title.should.equal("This is the title");
-                        bot.streams[channame.substring(1)].domain.should.equal("example.com");
-                        bot.domains.should.have.property("example.com");
+                        bot.streams[channame.substring(1)].vizdomain.should.equal("example.com");
                         done();
                     }
                 });
@@ -157,10 +156,9 @@ describe("StreamBot", function(){
                 ircClient.on('message', function(user,chan,message){
                     if(user === "bot" && message.indexOf("Topic change in " + channame) === 0){
                         bot.streams[channame.substring(1)].title.should.equal("This is the title");
-                        bot.streams[channame.substring(1)].domain.should.equal("example.com");
+                        bot.streams[channame.substring(1)].vizdomain.should.equal("example.com");
                         bot.streams[channame.substring(1)].gistid.should.equal(12345);
                         bot.streams[channame.substring(1)].gistuser.should.equal("arscan");
-                        bot.domains.should.have.property("example.com");
                         done();
                     }
                 });
@@ -173,11 +171,10 @@ describe("StreamBot", function(){
 
                 ircClient.on('message', function(user,chan,message){
                     if(user === "bot" && message.indexOf("Topic change in " + channame) === 0){
-                        bot.streams[channame.substring(1)].domain.should.equal("example.com");
+                        bot.streams[channame.substring(1)].vizdomain.should.equal("example.com");
                         bot.streams[channame.substring(1)].gistid.should.equal(12345);
                         bot.streams[channame.substring(1)].gistuser.should.equal("arscan");
                         bot.streams[channame.substring(1)].title.should.equal("This is the title");
-                        bot.domains.should.have.property("example.com");
                         done();
                     }
                 });
@@ -189,10 +186,9 @@ describe("StreamBot", function(){
 
                 ircClient.on('message', function(user,chan,message){
                     if(user === "bot" && message.indexOf("Topic change in " + channame) === 0){
-                        bot.streams[channame.substring(1)].domain.should.equal("example.com");
+                        bot.streams[channame.substring(1)].vizdomain.should.equal("example.com");
                         bot.streams[channame.substring(1)].gistid.should.equal(12345);
                         bot.streams[channame.substring(1)].gistuser.should.equal("arscan");
-                        bot.domains.should.have.property("example.com");
                         if( bot.streams[channame.substring(1)].title !== null){
                             throw { name: "System Error"};
                         }
@@ -200,42 +196,6 @@ describe("StreamBot", function(){
                     }
                 });
                 ircClient.topic(channame, topic);
-            });
-
-            it("should remove a domain if it changes", function(done){
-                ircClient.on('message', function(user,chan,message){
-
-                    if(user === "bot" && message.indexOf("Topic change in " + channame + " to %example.com% Title") === 0){
-                        bot.domains.should.have.property("example.com");
-                        bot.domains["example.com"].title.should.equal("Title");
-                        ircClient.topic(channame, "%newexample.com% Second title");
-
-                    } else if(user === "bot" && message.indexOf("Topic change in " + channame + " to %newexample.com% Second title") === 0){
-                        bot.domains.should.not.have.property("example.com");
-                        bot.domains.should.have.property("newexample.com");
-                        bot.domains["newexample.com"].title.should.equal("Second title");
-                        done();
-                    }
-                });
-                ircClient.topic(channame, "%example.com% Title");
-              
-            });
-
-            it("should remove a domain if it is deleted", function(done){
-                ircClient.on('message', function(user,chan,message){
-
-                    if(user === "bot" && message.indexOf("Topic change in " + channame + " to %example.com% Title") === 0){
-                        bot.domains.should.have.property("example.com");
-                        bot.domains["example.com"].title.should.equal("Title");
-                        ircClient.topic(channame, "Just title");
-
-                    } else if(user === "bot" && message.indexOf("Topic change in " + channame + " to Just title") === 0){
-                        bot.domains.should.not.have.property("example.com");
-                        done();
-                    }
-                });
-                ircClient.topic(channame, "%example.com% Title");
-              
             });
 
         });
