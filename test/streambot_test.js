@@ -27,10 +27,11 @@ describe("StreamBot", function(){
     });
 
     describe("Control functions", function(){
-        it("should connect to the command center section right away", function(){
+        // it("should connect to the command center section right away", function(){
+        // ...commented out because needed to add a 10 second timeout to the bot joining
 
-            ircClient.inChannel(CONTROLCENTER).should.be.true;
-        });
+        //     ircClient.inChannel(CONTROLCENTER).should.be.true;
+        // });
 
         it("should join a channel when told to by the prime bot", function(done){
             var channame = "#test" + Math.floor(Math.random() * 1000);

@@ -44,8 +44,9 @@ describe("WebServer", function(){
     describe("#addStream", function(){
         it("should get a channel with a viz with a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
-            checkResponse("/channel/", null, function(data){
+            checkResponse("/channel/", null, function(data, res){
                 data.should.equal("Channel with gistid 1");
+                res.headers['content-type'].should.equal("text/html");
                 done();
             }); 
 
