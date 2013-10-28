@@ -46,6 +46,16 @@ describe("StreamBot", function(){
             ircClient.sayfrom(PRIMEBOT, CONTROLCENTER,"New channel: " + channame);
 
         });
+        it("should emit a stream event telling people that it has a new channel", function(done){
+            var channame = "#test" + Math.floor(Math.random() * 1000);
+
+            bot.emitter.on("stream",function(stream){
+                stream.id.should.equal(channame.substring(1));
+                done();
+            });
+            ircClient.sayfrom(PRIMEBOT, CONTROLCENTER,"New channel: " + channame);
+
+        });
 
         it("should tell the world that its joining a channel when the prime bot tells it to", function(done){
             var channame = "#test" + Math.floor(Math.random() * 1000);
