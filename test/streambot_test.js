@@ -236,6 +236,15 @@ describe("StreamBot", function(){
             ircClient.sayfrom("somebot", channame, "Data!");
           
         });
+        it("should strip color control characters from messages", function(done){
+            stream.on('data', function(data){
+                data.message.should.not.contain("\u0003");
+                done();
+            });
+
+            ircClient.sayfrom("somebot", channame, "\u000315Data!\u000301");
+          
+        });
 
     });
 });

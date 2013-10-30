@@ -59,6 +59,15 @@ describe("WebServer", function(){
             }); 
 
         });
+        it("should not pass along the 404 page from github", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 5));
+            checkResponse("/channel/", null, function(data,res){
+                res.statusCode.should.equal(404);
+                data.should.not.contain("404 message from github");
+                done();
+            }); 
+
+        });
         it("should redirect for just a viz without a trailing slash", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 1));
             checkResponse("/channel",null, function(data, res){
