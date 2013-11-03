@@ -72,6 +72,14 @@ describe("DataStream", function(){
             });
             stream.send('This is a message from [Boston]');
         });
+        it("should send events with a good location using color codes", function(done){
+            stream.on('data',function(data){
+                if(data.location && data.location.lat && data.location.lng){
+                    done();
+                }
+            });
+            stream.send('This is a message from \u000308Boston\u000f');
+        });
         it("should send events on an unknown location", function(done){
             stream.on('data',function(data){
                 data.should.have.property("location");
@@ -119,6 +127,15 @@ describe("DataStream", function(){
                 done();
             });
             stream.send('This is a message from [204.215.129.226]');
+        });
+        it("should send events with a good ipv4 using color codes", function(done){
+            stream.on('data',function(data){
+                data.location.name.should.be.equal("Waltham, US");
+                data.location.should.have.property("lat");
+                data.location.should.have.property("lng");
+                done();
+            });
+            stream.send('This is a message from \u000308204.215.129.226\u000f');
         });
 
         it("should send events with a good ipv4 that doesn't know the city but does know the country", function(done){
