@@ -115,7 +115,7 @@ describe("WebServer", function(){
             });
 
         });
-        it("should cache responses unless told to not look at cache", function(done){
+        it("should cache responses unless cache has been cleared", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
             checkResponse("/channel/", null, function(data){
                 var response1 = data;
