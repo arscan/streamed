@@ -115,6 +115,17 @@ describe("WebServer", function(){
             });
 
         });
+        it("should cache responses unless told to not look at cache", function(done){
+            server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
+            checkResponse("/channel/", null, function(data){
+                var response1 = data;
+                checkResponse("/channel/arscan/3/?clearcache=0", null, function(data2){
+                    data2.should.not.equal(response1);
+                    done();
+                });
+            });
+
+        });
         it("should clear the cache after a time", function(done){
             server.addStream(new DataStream("channel", "This is the title of the stream", "arscan", 3));
             checkResponse("/channel/", null, function(data){
