@@ -111,6 +111,12 @@ var createMessage = function(ev){
         values.push("-");
     }
 
+    if(ev.actor_attributes && ev.actor_attributes.gravatar_id){
+        values.push(ev.actor_attributes.gravatar_id);
+    } else {
+        values.push("-");
+    }
+
     return formatArray(values);
     
 }
