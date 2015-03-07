@@ -1,4 +1,8 @@
-Streamed: A Streaming Data Visualization Platform 
+Streamed: A Streaming Data Visualization Platform
+---
+
+**NOTE**: I took down the servers running the full, IRC-backed version of this, as keeping them up to date was more trouble than it was worth.  If you would like to check out the github wargames visualization, I moved it to my site: http://www.robscanlon.com/github-wargames
+
 ---
 
 **Streamed** is a streaming data visualization platform (name is subject to change).  It is intended to be a central place for people to share meaningful data streams and creative visualizations.  There are plenty of sites out there that aggregate large, static data sets.  But I'm more interested in data that is constantly changing, and visualizations that expose patterns or help draw meaning from that data (or at least is cool looking).
